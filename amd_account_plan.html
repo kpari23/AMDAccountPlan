@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planview · AMD Account Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pv-green: #00A86B;
+    --pv-green-dark: #007A4D;
+    --pv-green-light: #E6F7F1;
+    --amd-red: #ED1C24;
+    --amd-red-light: #FEF0F0;
+    --bg: #F7F8FA;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --amber: #D97706;
+    --amber-light: #FFFBEB;
+    --purple: #7C3AED;
+    --purple-light: #F5F3FF;
+    --teal: #0891B2;
+    --teal-light: #ECFEFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); font-size: 14px; line-height: 1.6; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .pv-logo { font-size: 15px; font-weight: 600; color: var(--pv-green); letter-spacing: -0.3px; }
+  .header-divider { width: 1px; height: 20px; background: var(--border); }
+  .header-account { display: flex; align-items: center; gap: 8px; }
+  .amd-badge { background: var(--amd-red); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; }
+  .account-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .header-meta { display: flex; align-items: center; gap: 20px; }
+  .meta-pill { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+  .meta-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-green { background: var(--pv-green); }
+  .dot-amber { background: var(--amber); }
+  .stage-badge { background: var(--pv-green-light); color: var(--pv-green-dark); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+  .owner-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+  .owner-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--pv-green); color: white; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+
+  /* TABS */
+  .tabs-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; overflow-x: auto; }
+  .tabs { display: flex; gap: 0; }
+  .tab { padding: 14px 16px; font-size: 13px; font-weight: 400; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--pv-green); border-bottom-color: var(--pv-green); font-weight: 500; }
+  .tab-icon { font-size: 14px; }
+
+  /* LAYOUT */
+  .page { display: none; padding: 28px 32px; max-width: 1280px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* HERO STATS */
+  .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+  .stat-label { font-size: 11px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 600; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+  .stat-sub { font-size: 11px; color: var(--text-secondary); }
+  .stat-card.highlight { border-color: var(--pv-green); border-left: 3px solid var(--pv-green); }
+
+  /* SECTION HEADERS */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; }
+  .section-tag { font-size: 11px; color: var(--text-secondary); background: var(--bg); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); }
+
+  /* GRID LAYOUTS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .four-col { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .main-sidebar { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .full-width { margin-bottom: 24px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .card-sm { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 12px; }
+
+  /* STRATEGY TRACKS */
+  .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .track { border-radius: 8px; padding: 16px; }
+  .track-ai { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1px solid #BFDBFE; }
+  .track-ma { background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%); border: 1px solid #FDBA74; }
+  .track-sap { background: linear-gradient(135deg, #F0FDF4 0%, #D1FAE5 100%); border: 1px solid #6EE7B7; }
+  .track-org { background: linear-gradient(135deg, #FDF4FF 0%, #F5D0FE 100%); border: 1px solid #E879F9; }
+  .track-icon { font-size: 18px; margin-bottom: 8px; }
+  .track-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .track-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
+  .track-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* RISK CARDS */
+  .risk { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 10px; display: flex; gap: 14px; align-items: flex-start; }
+  .risk-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .risk-high { background: #FEE2E2; }
+  .risk-med { background: #FEF3C7; }
+  .risk-stat { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .risk-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .risk-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* PERSONA CARDS */
+  .persona { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; position: relative; }
+  .persona-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .persona-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+  .persona-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .persona-title { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+  .persona-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+  .badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 10px; }
+  .badge-buyer { background: #EFF6FF; color: #1D4ED8; }
+  .badge-champion { background: #F0FDF4; color: #15803D; }
+  .badge-navigator { background: #FFF7ED; color: #C2410C; }
+  .badge-influencer { background: #FDF4FF; color: #7E22CE; }
+  .badge-sponsor { background: #F0FDF4; color: #065F46; }
+  .badge-secondary { background: #F9FAFB; color: #374151; border: 1px solid #E5E7EB; }
+  .badge-high { background: #F0FDF4; color: #166534; }
+  .badge-mid { background: #FFFBEB; color: #92400E; }
+  .badge-tbd { background: #F9FAFB; color: #6B7280; }
+  .persona-hook { background: var(--bg); border-radius: 6px; padding: 10px 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; border-left: 2px solid var(--pv-green); margin-bottom: 10px; }
+  .persona-salesforce { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 4px; }
+  .sf-dot { width: 6px; height: 6px; border-radius: 50%; background: #00A1E0; }
+
+  /* CRM TABLE */
+  .crm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .crm-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .crm-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .crm-table tr:last-child td { border-bottom: none; }
+  .crm-table tr:hover td { background: var(--bg); }
+  .opp-won { color: #15803D; }
+  .opp-lost { color: #DC2626; }
+  .opp-migrated { color: var(--text-secondary); }
+  .amount-cell { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  /* TOOLING */
+  .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .tool-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .tool-name { font-size: 14px; font-weight: 600; }
+  .conf-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .conf-confirmed { background: #DCFCE7; color: #166534; }
+  .conf-high { background: #DBEAFE; color: #1E40AF; }
+  .conf-gap { background: #FEE2E2; color: #991B1B; }
+  .conf-medium { background: #FEF3C7; color: #92400E; }
+  .tool-gap { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+  .pv-angle { font-size: 12px; color: var(--pv-green-dark); background: var(--pv-green-light); border-radius: 6px; padding: 8px 10px; line-height: 1.5; }
+  .pv-angle strong { font-weight: 600; }
+
+  /* VALUE HYPOTHESIS */
+  .pain-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; border-left: 4px solid; }
+  .pain-01 { border-left-color: var(--blue); }
+  .pain-02 { border-left-color: var(--amd-red); }
+  .pain-03 { border-left-color: var(--amber); }
+  .pain-04 { border-left-color: var(--purple); }
+  .pain-num { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .pain-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .pain-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
+  .pain-diff { border-top: 1px solid var(--border); padding-top: 10px; }
+  .pain-diff-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--pv-green); margin-bottom: 4px; }
+  .pain-diff-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ENTRY POINTS */
+  .entry-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .entry-product-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-bottom: 10px; }
+  .badge-spm { background: #EFF6FF; color: #1D4ED8; }
+  .badge-ppm { background: #F0FDF4; color: #15803D; }
+  .badge-agile { background: #FDF4FF; color: #7E22CE; }
+  .badge-roadmaps { background: #FFF7ED; color: #C2410C; }
+  .entry-tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: var(--pv-green-light); color: var(--pv-green-dark); margin-bottom: 8px; }
+  .entry-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .entry-bullets { list-style: none; }
+  .entry-bullets li { font-size: 12px; color: var(--text-secondary); padding: 4px 0; padding-left: 14px; position: relative; line-height: 1.5; }
+  .entry-bullets li::before { content: '→'; position: absolute; left: 0; color: var(--pv-green); font-size: 11px; }
+  .entry-champion { margin-top: 10px; font-size: 11px; color: var(--text-tertiary); }
+
+  /* OUTREACH */
+  .outreach-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .outreach-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .outreach-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .outreach-table tr:last-child td { border-bottom: none; }
+  .outreach-table tr:hover td { background: var(--bg); }
+  .priority-immediate { background: #DCFCE7; color: #166534; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+  .priority-week2 { background: #DBEAFE; color: #1E40AF; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+  .priority-week3 { background: #FEF3C7; color: #92400E; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+  .priority-week4 { background: #F5F3FF; color: #6D28D9; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+  .outreach-subject { font-weight: 500; color: var(--text-primary); margin-bottom: 3px; }
+  .outreach-angle { font-size: 12px; color: var(--text-secondary); }
+
+  /* EMAIL MODAL */
+  .email-cards { display: flex; flex-direction: column; gap: 16px; }
+  .email-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .email-header { padding: 14px 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
+  .email-to { font-size: 12px; font-weight: 600; }
+  .email-subject { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-top: 3px; }
+  .email-body { padding: 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+  .email-body p { margin-bottom: 10px; }
+  .email-body p:last-child { margin-bottom: 0; }
+  .talk-track { border-top: 1px solid var(--border); padding: 14px 16px; background: var(--pv-green-light); }
+  .talk-track-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--pv-green-dark); margin-bottom: 8px; }
+  .talk-track-text { font-size: 12px; color: #1F5C40; line-height: 1.6; }
+
+  /* NEXT STEPS */
+  .phase { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .phase-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .phase-num { width: 28px; height: 28px; border-radius: 50%; background: var(--pv-green); color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .phase-title { font-size: 14px; font-weight: 600; }
+  .phase-sub { font-size: 12px; color: var(--text-secondary); }
+  .step { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: none; }
+  .step-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 13px; line-height: 1.5; }
+
+  /* LIVE FEED */
+  .feed-controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .feed-filter { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+  .feed-filter.active { background: var(--pv-green); color: white; border-color: var(--pv-green); }
+  .feed-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 10px; display: flex; gap: 14px; }
+  .feed-source-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; flex-shrink: 0; }
+  .src-earnings { background: #1D4ED8; }
+  .src-news { background: #DC2626; }
+  .src-linkedin { background: #0A66C2; }
+  .src-sec { background: #065F46; }
+  .src-deal { background: var(--pv-green); }
+  .src-crm { background: #00A1E0; }
+  .feed-date { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .feed-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+  .feed-body { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .feed-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 6px; }
+  .tag-risk { background: #FEE2E2; color: #991B1B; }
+  .tag-deal { background: #DCFCE7; color: #166534; }
+  .tag-strategy { background: #DBEAFE; color: #1E40AF; }
+  .tag-persona { background: #F5F3FF; color: #6D28D9; }
+  .tag-crm { background: #E0F2FE; color: #0369A1; }
+
+  /* PINNED */
+  .pinned-item { background: var(--amber-light); border: 1px solid #FDE68A; border-radius: 10px; padding: 16px; margin-bottom: 10px; }
+  .pinned-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--amber); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+
+  /* QUOTE BLOCK */
+  .quote-block { background: var(--bg); border-left: 3px solid var(--amd-red); border-radius: 0 8px 8px 0; padding: 14px 16px; margin: 16px 0; }
+  .quote-text { font-size: 13px; font-style: italic; color: var(--text-primary); margin-bottom: 6px; line-height: 1.6; }
+  .quote-attr { font-size: 11px; color: var(--text-secondary); }
+
+  /* HYPOTHESIS BANNER */
+  .hypothesis-banner { background: linear-gradient(135deg, #003D2B 0%, #006644 100%); border-radius: 12px; padding: 28px 32px; margin-bottom: 24px; color: white; }
+  .hyp-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); margin-bottom: 10px; }
+  .hyp-text { font-size: 16px; font-weight: 400; line-height: 1.7; color: rgba(255,255,255,0.95); }
+  .hyp-text strong { font-weight: 600; color: #7EDBB5; }
+
+  /* CRM SECTION */
+  .sf-banner { background: #001A2E; border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .sf-logo { font-size: 11px; font-weight: 700; color: #00A1E0; letter-spacing: 1px; }
+  .sf-pipe { color: rgba(255,255,255,0.2); }
+  .sf-opp-id { font-family: 'DM Mono', monospace; font-size: 12px; color: #7DD3FC; }
+  .sf-status { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .sf-acv { font-size: 14px; font-weight: 600; color: white; margin-left: auto; }
+
+  .meddpicc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .meddpicc-item { background: var(--bg); border-radius: 8px; padding: 12px; }
+  .meddpicc-letter { font-size: 18px; font-weight: 700; color: var(--pv-green); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+  .meddpicc-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); margin-bottom: 6px; }
+  .meddpicc-text { font-size: 12px; color: var(--text-primary); line-height: 1.5; }
+
+  /* SCROLL HINT */
+  .scroll-hint { text-align: center; color: var(--text-tertiary); font-size: 11px; padding: 8px 0 16px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+    .two-col, .three-col, .four-col, .main-sidebar { grid-template-columns: 1fr; }
+    .track-grid { grid-template-columns: 1fr; }
+    .meddpicc-grid { grid-template-columns: 1fr; }
+  }
+
+  .timeline-bar { display: flex; gap: 0; margin-bottom: 24px; }
+  .tl-phase { flex: 1; text-align: center; }
+  .tl-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px; border-radius: 6px 6px 0 0; }
+  .tl-body { border: 1px solid var(--border); border-top: none; padding: 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; border-radius: 0 0 6px 6px; text-align: left; }
+  .tl-now .tl-label { background: var(--pv-green); color: white; }
+  .tl-30 .tl-label { background: #DBEAFE; color: #1E40AF; }
+  .tl-60 .tl-label { background: #FEF3C7; color: #92400E; }
+  .tl-body ul { list-style: none; }
+  .tl-body li { padding: 3px 0; padding-left: 12px; position: relative; }
+  .tl-body li::before { content: '·'; position: absolute; left: 2px; color: var(--pv-green); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="pv-logo">planview</div>
+      <div class="header-divider"></div>
+      <div class="header-account">
+        <div class="amd-badge">AMD</div>
+        <div class="account-name">Advanced Micro Devices, Inc.</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="stage-badge">New Logo · Greenfield</div>
+      <div class="meta-pill"><div class="meta-dot dot-green"></div>NASDAQ: AMD</div>
+      <div class="owner-chip">
+        <div class="owner-avatar">KP</div>
+        Kush Parikh · Enterprise AE
+      </div>
+      <div class="meta-pill" style="color: var(--text-tertiary);">April 2026 · Confidential</div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-bar">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('business')"><span class="tab-icon">📊</span>Business Context</div>
+    <div class="tab" onclick="switchTab('personas')"><span class="tab-icon">👤</span>Stakeholders</div>
+    <div class="tab" onclick="switchTab('crm')"><span class="tab-icon">☁️</span>CRM &amp; History</div>
+    <div class="tab" onclick="switchTab('tooling')"><span class="tab-icon">🔧</span>Tooling Landscape</div>
+    <div class="tab" onclick="switchTab('hypothesis')"><span class="tab-icon">💡</span>Value Hypothesis</div>
+    <div class="tab" onclick="switchTab('outreach')"><span class="tab-icon">✉️</span>Outreach Playbook</div>
+    <div class="tab" onclick="switchTab('livefeed')"><span class="tab-icon">📰</span>Live Intel</div>
+    <div class="tab" onclick="switchTab('nextsteps')"><span class="tab-icon">🎯</span>Next Steps</div>
+  </div>
+</div>
+
+<!-- ===================== BUSINESS CONTEXT ===================== -->
+<div id="tab-business" class="page active">
+
+  <div class="hero-stats">
+    <div class="stat-card highlight">
+      <div class="stat-label">FY2025 Revenue</div>
+      <div class="stat-value">$25.8B</div>
+      <div class="stat-sub">Record year · +24% YoY</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Server CPU Share</div>
+      <div class="stat-value">36.5%</div>
+      <div class="stat-sub">Up from ~23% in 2023</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">AI Chip Revenue</div>
+      <div class="stat-value">$5B+</div>
+      <div class="stat-sub">FY2024 · vs Nvidia $125B+</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Strategic Tracks</div>
+      <div class="stat-value">4</div>
+      <div class="stat-sub">Running simultaneously, no unified platform</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Strategic Context — The Business AMD Is Running Right Now</div>
+    <div class="section-tag">Source: AMD IR, 10-K, earnings calls, press releases</div>
+  </div>
+
+  <div class="track-grid full-width">
+    <div class="track track-ai">
+      <div class="track-icon">🤖</div>
+      <div class="track-name" style="color: #1D4ED8;">AI Platform Initiative</div>
+      <div class="track-title">Full-Stack AI: Chips → Software → Services</div>
+      <div class="track-desc">Shift from hardware vendor to full-stack AI platform. Hero partnerships: OpenAI 6GW deal, Meta $60B expanded partnership, Oracle supercluster. Helios rack-scale architecture launching mid-2026. AMD ROCm 7 software stack competing with CUDA. MI450 series GPU deliveries in flight. Execution over experimentation is the stated 2026 posture — Lisa Su at CES 2026: "AI everywhere, for everyone."</div>
+    </div>
+    <div class="track track-ma">
+      <div class="track-icon">🏗</div>
+      <div class="track-name" style="color: #C2410C;">M&amp;A Integration</div>
+      <div class="track-title">ZT Systems + Silo AI — Integration Risk On Record</div>
+      <div class="track-desc">ZT Systems closed March 2025 (full-stack AI systems). Silo AI (European model dev, acquired 2024). Both absorbed into Data Center Solutions BU under Forrest Norrod. Integration risk explicitly flagged in AMD 8-K filings — synergy realization timeline uncertain. Program interdependencies between legacy AMD, ZT, and Silo AI tracked in fragmented tools with no single executive view.</div>
+    </div>
+    <div class="track track-sap">
+      <div class="track-icon">⚙️</div>
+      <div class="track-name" style="color: #065F46;">AXCENT / SAP Carry-Forward</div>
+      <div class="track-title">SAP RISE on Google Cloud — Stabilization Ongoing</div>
+      <div class="track-desc">Project AXCENT: dual-phase go-live Jan + July 2023. AMD now runs SAP RISE on Google Cloud covering finance, supply chain, and HR. Post-go-live stabilization ongoing. Internal AI chatbot deployment underway across functions. Katrin Schulenburg's IT org owns the portfolio while managing simultaneous acquisition integration demands — Planview integrates natively with SAP S/4HANA.</div>
+    </div>
+    <div class="track track-org">
+      <div class="track-icon">👥</div>
+      <div class="track-name" style="color: #7E22CE;">Post-Layoff Resource Reallocation</div>
+      <div class="track-title">4% Workforce Cut — No Portfolio Platform to Track Impact</div>
+      <div class="track-desc">Nov 2024: ~1,000 roles eliminated. Gaming + Client BUs merged. Resources reallocated toward Data Center AI. AMD spokesperson: "aligning our resources with our largest growth opportunities." No unified portfolio platform exists to track where capacity actually landed or what was deprioritized. This is the execution infrastructure gap Abhi Pant was hired to close.</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Business Risks Driving Portfolio Urgency</div>
+    <div class="section-tag">Source: AMD 8-K, 10-K, earnings transcripts, public filings</div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="risk">
+        <div class="risk-icon risk-high">⚡</div>
+        <div>
+          <div class="risk-stat" style="color: var(--amd-red);">$800M</div>
+          <div class="risk-title">Export Control Volatility</div>
+          <div class="risk-desc">U.S. license requirements on Instinct MI308 forced rapid portfolio reprioritization in 2025. AMD needed to redirect engineering capacity and customer programs overnight. Inventory charge of ~$440M recorded in FY2025 filings. No scenario modeling capability existed to model trade-offs before they became costs. This is the exact risk Planview SPM is designed to prevent.</div>
+        </div>
+      </div>
+      <div class="risk">
+        <div class="risk-icon risk-high">🏆</div>
+        <div>
+          <div class="risk-stat" style="color: var(--amd-red);">80%+</div>
+          <div class="risk-title">Nvidia Dominance + ROCm Software Gap</div>
+          <div class="risk-desc">AMD AI chip revenue ~$5B vs Nvidia's $125B+ in 2024. Closing the gap requires massive simultaneous investment in hardware (MI450, MI500), ROCm software, and enterprise partnerships — all competing for the same engineering resources. No unified prioritization view exists to make trade-off decisions across these competing demands.</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="risk">
+        <div class="risk-icon risk-med">🔗</div>
+        <div>
+          <div class="risk-stat" style="color: var(--amber);">2</div>
+          <div class="risk-title">Acquisition Integration Risk — On Record</div>
+          <div class="risk-desc">AMD's own 8-K filings flag risks that ZT Systems and Silo AI businesses may not be integrated successfully. Dependencies between legacy AMD, ZT, and Silo AI teams are tracked in Jira and Excel with no single executive view of what is at risk or when. Robin Sullivan's prior PMO work at AMD governing 25+ initiatives shows exactly where fragmented tools break down.</div>
+        </div>
+      </div>
+      <div class="risk">
+        <div class="risk-icon risk-med">🌐</div>
+        <div>
+          <div class="risk-stat" style="color: var(--amber);">$1.5B</div>
+          <div class="risk-title">Supply Chain + Tariff Exposure</div>
+          <div class="risk-desc">U.S.-China trade war forced AMD to reroute manufacturing through Vietnam and Thailand. Geopolitical disruptions require the ability to reprioritize programs dynamically across engineering, supply, and customer commitments simultaneously. AMD cannot currently exercise this capability with Jira, Excel, and Smartsheet operating in silos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    <div class="quote-text">"As a part of aligning our resources with our largest growth opportunities, we are taking a number of targeted steps..."</div>
+    <div class="quote-attr">— AMD spokesperson, November 2024 layoff announcement · The gap between that statement and the portfolio infrastructure to execute it is the Planview opportunity.</div>
+  </div>
+
+</div>
+
+<!-- ===================== STAKEHOLDERS ===================== -->
+<div id="tab-personas" class="page">
+
+  <div class="section-header">
+    <div class="section-title">Buying Map — 6 Confirmed Stakeholders</div>
+    <div class="section-tag">Source: LinkedIn, ZoomInfo, Salesforce CRM, AMD newsroom, job postings</div>
+  </div>
+
+  <div class="two-col">
+
+    <div class="persona">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background: #1D4ED8;">AP</div>
+        <div>
+          <div class="persona-name">Abhi Pant</div>
+          <div class="persona-title">Corporate VP, Strategy, Operations &amp; Programs · Jan 2025</div>
+        </div>
+      </div>
+      <div class="persona-badges">
+        <span class="badge badge-buyer">PRIMARY BUYER</span>
+        <span class="badge badge-high">High Maturity</span>
+      </div>
+      <div class="persona-hook">Hook: "Does AMD have the portfolio infrastructure to make the trade-off decisions you're being asked to make at this speed?"</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">Joined Jan 2025 to build AMD's execution operating model from scratch. Came from NetApp (SVP Strategic Business Operations) and Cisco (VP Strategy, Planning &amp; Business Operations) where enterprise portfolio tooling was standard. Earlier: Walmart Global eCommerce, Yahoo, Deloitte. Owns the strategy-to-execution gap — this is exactly what Planview solves.</p>
+      <div class="persona-salesforce"><div class="sf-dot"></div>Not yet in Salesforce — outreach pending</div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background: #065F46;">KS</div>
+        <div>
+          <div class="persona-name">Katrin Schulenburg</div>
+          <div class="persona-title">Corporate VP, Information Technology · 27-year AMD veteran</div>
+        </div>
+      </div>
+      <div class="persona-badges">
+        <span class="badge badge-sponsor">EXEC SPONSOR</span>
+        <span class="badge badge-high">High Maturity</span>
+      </div>
+      <div class="persona-hook">Hook: "How does IT defend its portfolio — to Jean Hu, to Lisa Su — when every BU leader claims their programs are the top priority?"</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">Featured in Forbes on AMD's AI transformation. Publicly advocates for IT's strategic value. Presented at Nexthink Experience 2024 on AMD's DEX approach. Runs SAP stabilization, Nexthink, internal AI programs, and acquisition integration simultaneously. Last Salesforce activity: April 13, 2026 — most recent active contact in the account.</p>
+      <div class="persona-salesforce"><div class="sf-dot"></div>In Salesforce · katrin.schulenburg@amd.com · Last activity Apr 13, 2026</div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background: #7C3AED;">RS</div>
+        <div>
+          <div class="persona-name">Robin Sullivan</div>
+          <div class="persona-title">Director, Program Management · Global Operations</div>
+        </div>
+      </div>
+      <div class="persona-badges">
+        <span class="badge badge-champion">CHAMPION</span>
+        <span class="badge badge-mid">Mid Maturity</span>
+      </div>
+      <div class="persona-hook">Hook: "What does it cost you — professionally — when a prioritization call gets challenged with no data to stand behind it?"</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">Previously governed 25+ Engineering Improvement Initiatives in AMD's PMO. Achieved $150M+ cost avoidance documented in AMD internal records. Knows the pain of political prioritization without data. Lives the Jira + Excel + Smartsheet fragmentation every day. Most likely to champion Planview from the practitioner level up.</p>
+      <div class="persona-salesforce"><div class="sf-dot"></div>Not yet in Salesforce — confirm via LinkedIn</div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background: #C2410C;">DM</div>
+        <div>
+          <div class="persona-name">Don McClure, MBA, PMP</div>
+          <div class="persona-title">Chief of Staff, Server Solutions Group</div>
+        </div>
+      </div>
+      <div class="persona-badges">
+        <span class="badge badge-navigator">NAVIGATOR</span>
+        <span class="badge badge-high">Mid-High Maturity</span>
+      </div>
+      <div class="persona-hook">Hook: "When a dependency slips between ZT integration and the OpenAI delivery commitment, how quickly does leadership see it?"</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">Sits at the center of AMD's most critical delivery commitments — OpenAI MI450 6GW, Meta supply agreements, Helios rack-scale. PMP-certified. Understands the gap between project trackers and portfolio platforms. Best navigator into the Server Solutions delivery org. Warm intro path through existing AMD contacts preferred.</p>
+      <div class="persona-salesforce"><div class="sf-dot"></div>Not yet in Salesforce — warm intro target</div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background: #0891B2;">CS</div>
+        <div>
+          <div class="persona-name">Christopher Simonich</div>
+          <div class="persona-title">Sr. Director, EPYC Product Strategy</div>
+        </div>
+      </div>
+      <div class="persona-badges">
+        <span class="badge badge-influencer">INFLUENCER</span>
+        <span class="badge badge-high">High Maturity</span>
+      </div>
+      <div class="persona-hook">Hook: "Can your team model the resource consequences of a hyperscaler customization request before you commit to the roadmap?"</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">Former Intel strategic planning lead — deep portfolio and scenario planning background. At AMD, owns EPYC product strategy spanning Turin 9005, Venice, and AI server roadmaps. Manages portfolio complexity across annual silicon cadence. High-maturity leader who understands the difference between Planview and a project tracker.</p>
+      <div class="persona-salesforce"><div class="sf-dot"></div>Not yet in Salesforce — LinkedIn confirmed</div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background: #9CA3AF;">CW</div>
+        <div>
+          <div class="persona-name">Chris Wire</div>
+          <div class="persona-title">Corporate VP, IT · Scope TBD</div>
+        </div>
+      </div>
+      <div class="persona-badges">
+        <span class="badge badge-secondary">SECONDARY BUYER</span>
+        <span class="badge badge-tbd">Scope TBD</span>
+      </div>
+      <div class="persona-hook">Hook: Validate charter first — then align outreach to either IT portfolio or infrastructure mandate.</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">Corp VP title in IT alongside Schulenburg — likely split mandate across geographic or functional scope. Limited public signal. Priority: validate charter via warm intro or discovery outreach before investing outreach effort. Potential path via Schulenburg relationship or existing AMD contact network in Salesforce.</p>
+      <div class="persona-salesforce"><div class="sf-dot"></div>Not yet in Salesforce — validate scope first</div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ===================== CRM & HISTORY ===================== -->
+<div id="tab-crm" class="page">
+
+  <div class="sf-banner">
+    <div class="sf-logo">SALESFORCE</div>
+    <div class="sf-pipe">|</div>
+    <div class="sf-opp-id">Account: Advanced Micro Devices, Inc. · ID: 0014100000UC6VAAA1</div>
+    <div class="sf-status">42 opportunities · 80+ contacts · 20+ year history</div>
+    <div class="sf-acv">New Logo Opportunity</div>
+  </div>
+
+  <div class="two-col">
+
+    <div class="card full-width">
+      <div class="card-title">Opportunity History — 42 Records (2004–2022)</div>
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Type</th>
+            <th>Stage</th>
+            <th>Amount</th>
+            <th>Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Renewal: Advanced Micro Devices 2022</td><td>Renewal</td><td><span class="opp-lost">Closed Lost</span></td><td class="amount-cell">$37,007</td><td>2022</td></tr>
+          <tr><td>Renewal: Advanced Micro Devices 2021</td><td>Renewal</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$33,982</td><td>2021</td></tr>
+          <tr><td>Renewal: Advanced Micro Devices 2020</td><td>Renewal</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$32,999</td><td>2020</td></tr>
+          <tr><td>AMD - E1 Migration</td><td>Product Upsell</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$0</td><td>2018</td></tr>
+          <tr><td>Renewal 2019</td><td>Renewal</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$105,740</td><td>2019</td></tr>
+          <tr><td>Renewal 2018</td><td>Renewal</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$102,660</td><td>2018</td></tr>
+          <tr><td>AMD: PPM (Product Upsell)</td><td>Product Upsell</td><td><span class="opp-lost">Closed Lost</span></td><td class="amount-cell">$150,000</td><td>2017</td></tr>
+          <tr><td>Tiger Team Migration</td><td>Migration</td><td><span class="opp-migrated">Migrated</span></td><td class="amount-cell">$102,660</td><td>2017</td></tr>
+          <tr><td>AMD: 2016 maint + hosting</td><td>Renewal</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$97,306</td><td>2016</td></tr>
+          <tr><td>AMD: PPM (New Logo attempt)</td><td>New Logo</td><td><span class="opp-lost">Closed Lost</span></td><td class="amount-cell">$1</td><td>2016</td></tr>
+          <tr><td>AMD: 2015 maint + hosting</td><td>Renewal</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$97,306</td><td>2015</td></tr>
+          <tr><td>AMD: SAML</td><td>Services</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$5,499</td><td>2015</td></tr>
+          <tr><td>AMD: 2014 SaaS maint + hosting</td><td>New Logo</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$92,056</td><td>2014</td></tr>
+          <tr><td>AMD: 2014 services</td><td>Services</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$68,000</td><td>2014</td></tr>
+          <tr><td>AMD: 2013 SaaS conversion</td><td>New Logo</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$71,056</td><td>2013</td></tr>
+          <tr><td>AMD: BPM Services</td><td>New Logo</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$80,000</td><td>2009</td></tr>
+          <tr><td>AMD: Alignment Accelerator</td><td>New Logo</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$297,178</td><td>2010</td></tr>
+          <tr><td>AMD: APO/SM ELA</td><td>New Logo</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$69,472</td><td>2007</td></tr>
+          <tr><td>AMD - EA (Enterprise Agreement)</td><td>New Logo</td><td><span class="opp-won">Closed Won</span></td><td class="amount-cell">$499,911</td><td>2006</td></tr>
+          <tr style="background: #FFFBEB;"><td><strong>AMD: PPM (Lost) — LEARN FROM THIS</strong></td><td>New Logo</td><td><span class="opp-lost">Closed Lost</span></td><td class="amount-cell">$0</td><td>2009</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Key CRM Insight — What the History Tells Us</div>
+      <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+        <p style="margin-bottom: 10px;">AMD is a <strong>long-term Planview relationship</strong> going back to 2004 — originally won on Enterprise Agreement and BPM Services. The account sustained renewals through 2021 but was <strong>lost in 2022</strong> at the $37K renewal level.</p>
+        <p style="margin-bottom: 10px;"><strong>Critical context:</strong> A PPM upsell attempt in 2017 (valued at $150K) closed lost. This is the most important historical signal — AMD has been approached for portfolio management before and said no. The current approach must be positioned differently: not as PPM software, but as execution infrastructure for AMD's 2026 strategic agenda.</p>
+        <p><strong>Abhi Pant is the new variable.</strong> He joined in January 2025 — after the 2022 churn — and brings the exact background that makes this conversation credible. He built this infrastructure at Cisco and NetApp. The question is whether AMD is ready to build it now.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Active Contacts in Salesforce</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <div>
+            <div style="font-size: 13px; font-weight: 500;">Katrin Schulenburg</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Corp VP IT · katrin.schulenburg@amd.com</div>
+          </div>
+          <div style="font-size: 11px; color: var(--pv-green);">Apr 13, 2026</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <div>
+            <div style="font-size: 13px; font-weight: 500;">Michael Winslett</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">IT Director, Finance Systems</div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Nov 2024</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <div>
+            <div style="font-size: 13px; font-weight: 500;">Michael Scholten</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Program Manager</div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Sep 2024</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <div>
+            <div style="font-size: 13px; font-weight: 500;">Ravi Thadani</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Head of IT Business Applications</div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">May 2023</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+          <div>
+            <div style="font-size: 13px; font-weight: 500;">Bassem Tadros</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Manager, PMO · bassem.tadros@amd.com</div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">May 2022</div>
+        </div>
+        <div style="text-align: center; font-size: 11px; color: var(--text-tertiary); padding-top: 8px;">+ 80 additional contacts in CRM history</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card full-width">
+    <div class="card-title">MEDDPICC — New Logo Assessment</div>
+    <div class="meddpicc-grid">
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">M</div>
+        <div class="meddpicc-label">Metrics</div>
+        <div class="meddpicc-text">AMD is managing 50+ concurrent strategic initiatives with Jira, Excel, and Smartsheet. No scenario modeling before the $800M export control charge. Metric: days-to-decision on portfolio trade-offs reduced from quarters to days. Secondary: engineering capacity reclaimed from political negotiation to delivery.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">E</div>
+        <div class="meddpicc-label">Economic Buyer</div>
+        <div class="meddpicc-text">Abhi Pant (Corp VP Strategy) — owns the execution operating model gap and has budget authority for this category. Katrin Schulenburg (Corp VP IT) — executive sponsor with IT portfolio budget. Neither confirmed in Salesforce yet. Jean Hu (CFO) controls enterprise-level investment approvals.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">D</div>
+        <div class="meddpicc-label">Decision Criteria</div>
+        <div class="meddpicc-text">Integration with SAP S/4HANA (non-negotiable given AXCENT investment). Above-Jira governance layer — no rip-and-replace. Scenario modeling for export control and hyperscaler commitment trade-offs. Executive-readable portfolio view across ZT + Silo AI integration programs.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">D</div>
+        <div class="meddpicc-label">Decision Process</div>
+        <div class="meddpicc-text">No active RFP confirmed. Entry point is discovery — not a vendor evaluation. Abhi Pant likely runs internal assessment before any vendor engagement. Schulenburg controls IT procurement. Budget cycle timing unknown — validate in first Abhi Pant discovery call.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">I</div>
+        <div class="meddpicc-label">Identified Pain</div>
+        <div class="meddpicc-text">$800M export control charge with no scenario modeling. 50+ concurrent initiatives with no cross-portfolio visibility. ZT + Silo AI integration tracked in fragmented tools. PMO governing 25+ EI programs on Jira and Excel. IT portfolio invisible to CFO without a governance platform. "All initiatives are critical" dynamic confirmed by multiple BU stakeholder signals.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">C</div>
+        <div class="meddpicc-label">Champion</div>
+        <div class="meddpicc-text">Robin Sullivan (Dir. Program Management) — most likely practitioner champion. Abhi Pant — potential executive champion if positioned as execution infrastructure, not software. Katrin Schulenburg — confirmed Salesforce contact with recent activity. 30-day goal: secure 25-minute discovery call with Abhi Pant.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">C</div>
+        <div class="meddpicc-label">Compelling Event</div>
+        <div class="meddpicc-text">OpenAI 6GW delivery commitment mid-2026 creates a hard execution deadline. ZT Systems integration synergy timeline is under scrutiny. AMD Financial Analyst Day positions company as leader across 6 segments — all competing for the same resource pool. Each quarter without portfolio governance is a quarter AMD cannot defend its prioritization decisions to investors.</div>
+      </div>
+      <div class="meddpicc-item">
+        <div class="meddpicc-letter">P</div>
+        <div class="meddpicc-label">Procurement Process</div>
+        <div class="meddpicc-text">No active procurement event. Entry is through Abhi Pant's strategy function, not IT procurement. Schulenburg's IT org owns procurement for technology investments. History shows AMD has evaluated PPM before (2009, 2017 — both lost). Must position as strategy infrastructure investment, not IT software purchase.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== TOOLING ===================== -->
+<div id="tab-tooling" class="page">
+
+  <div class="section-header">
+    <div class="section-title">Current Tooling Landscape — What AMD Is Actually Running</div>
+    <div class="section-tag">Source: Job postings (Indeed), LinkedIn profiles, AMD/Google Cloud case study, press releases</div>
+  </div>
+
+  <div class="two-col">
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-name">SAP S/4HANA (RISE)</div>
+        <span class="conf-badge conf-confirmed">CONFIRMED</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500;">ERP / Enterprise Platform · Source: AMD AXCENT blog + Google Cloud case study</div>
+      <div class="tool-gap">Handles finance, supply chain, and HR — but provides zero portfolio management, initiative prioritization, or resource capacity planning. Post-go-live stabilization ongoing. IT owns this platform and is managing it alongside 3 other major transformation tracks simultaneously.</div>
+      <div class="pv-angle"><strong>Planview angle:</strong> Integrates natively with SAP S/4HANA. AMD does not need to replace its ERP — Planview extends it for portfolio decision-making and provides the financial portfolio visibility layer above it.</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-name">Jira + Confluence (Atlassian)</div>
+        <span class="conf-badge conf-high">HIGH CONFIDENCE</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500;">Agile / Engineering Execution · Source: AMD job posting: "Experience with JIRA, Confluence and Excel is an asset"</div>
+      <div class="tool-gap">Tracks team-level delivery. Cannot provide portfolio visibility, resource capacity planning, or strategy-to-execution alignment across hundreds of parallel programs. Engineers are comfortable in Jira — any replacement attempt would fail. The answer is governance above, not replacement below.</div>
+      <div class="pv-angle"><strong>Planview angle:</strong> Sits above Jira as the SPM/PPM governance layer. Engineers keep Jira. Leadership gets the portfolio view they cannot see today. No migration required.</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-name">Microsoft Project + Excel</div>
+        <span class="conf-badge conf-high">HIGH CONFIDENCE</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500;">Project / Program Management · Source: AMD job posting: "Experience with Microsoft Project and Excel is an asset"</div>
+      <div class="tool-gap">Enables individual project tracking. Cannot support cross-portfolio visibility, dynamic resource allocation, or scenario planning across 25+ concurrent initiatives. Robin Sullivan's prior AMD role governing 25+ Engineering Improvement Initiatives is exactly where these tools break down at scale.</div>
+      <div class="pv-angle"><strong>Planview angle:</strong> Excel and MS Project are the hallmarks of low-to-mid portfolio maturity. The conversation: "You've outgrown what these tools were designed for — and the cost of that gap showed up in 2025."</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-name">Smartsheet</div>
+        <span class="conf-badge conf-medium">MEDIUM-HIGH</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500;">Work Management / Operations · Source: AMD Strategic PM job posting: "Knowledge of Smartsheet an advantage"</div>
+      <div class="tool-gap">Used in HR and corporate operations. No financial portfolio management, resource capacity modeling, or scenario planning capability. A stopgap that shows appetite for structured tracking, not a governance platform. Presence in the stack signals maturity awareness without maturity achievement.</div>
+      <div class="pv-angle"><strong>Planview angle:</strong> "Smartsheet's presence confirms you know you need structured tracking. The conversation is: you've grown beyond what Smartsheet can do at this scale."</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-name">Nexthink</div>
+        <span class="conf-badge conf-confirmed">CONFIRMED</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500;">Digital Employee Experience · Source: Katrin Schulenburg LinkedIn — presented at Nexthink Experience 2024</div>
+      <div class="tool-gap">IT endpoint monitoring and employee experience — adjacent to, not competitive with, Planview. Schulenburg chose to present at Nexthink's user conference, which confirms she is a technology adopter who invests in platforms with demonstrable business outcomes.</div>
+      <div class="pv-angle"><strong>Planview angle:</strong> Not competitive. Use Nexthink as evidence: "You've shown at Nexthink that you invest in platforms with measurable outcomes. That's exactly the lens we want to apply to portfolio governance."</div>
+    </div>
+
+    <div class="tool-card" style="border: 2px solid var(--amd-red); background: #FEF0F0;">
+      <div class="tool-header">
+        <div class="tool-name">No Enterprise PPM / SPM Platform</div>
+        <span class="conf-badge conf-gap">CONFIRMED GAP</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500;">Portfolio Management Layer · Source: No evidence in job postings, case studies, LinkedIn profiles, or press releases of Planview, Clarity, ServiceNow SPM, or any equivalent</div>
+      <div class="tool-gap">AMD manages its most ambitious strategic period — simultaneous AI platform pivot, two active acquisitions, hyperscaler delivery commitments, and a post-layoff reorganization — with a fragmented stack of execution tools operating in silos. No single view connects funded strategy to delivery across the portfolio.</div>
+      <div class="pv-angle" style="background: white; border-left: 3px solid var(--amd-red);"><strong>This is the white space.</strong> AMD has the budget complexity, the acquisition integration challenge, and the hyperscaler commitment stakes to justify enterprise SPM immediately. This is the most important slide in the account plan.</div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ===================== VALUE HYPOTHESIS ===================== -->
+<div id="tab-hypothesis" class="page">
+
+  <div class="hypothesis-banner">
+    <div class="hyp-label">Core Value Hypothesis</div>
+    <div class="hyp-text">Planview gives AMD the ability to make <strong>funded, resource-backed trade-off decisions</strong> across its AI platform strategy in <strong>days, not quarters</strong> — replacing a fragmented stack of Jira, Excel, Smartsheet, and Microsoft Project that cannot tell leadership which of AMD's 50+ concurrent initiatives is most critical to execute, what it costs to keep running everything, and what gets deprioritized when conditions change overnight.</div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Four Pain Points — Four Planview Differentiators</div>
+  </div>
+
+  <div class="two-col">
+    <div class="pain-card pain-01">
+      <div class="pain-num" style="color: var(--blue);">Pain 01</div>
+      <div class="pain-title">Cannot Reprioritize Fast Enough</div>
+      <div class="pain-desc">The $800M MI308 export control charge exposed AMD's inability to dynamically redirect engineering capacity when conditions shift overnight. No scenario modeling capability exists to run "what if" analysis before a decision becomes a cost. AMD needed to redirect engineering capacity and customer programs — and did it reactively, not proactively.</div>
+      <div class="pain-diff">
+        <div class="pain-diff-label">Planview Differentiator</div>
+        <div class="pain-diff-text">Dynamic scenario modeling with financial and resource constraints. Abhi Pant built this infrastructure at Cisco and NetApp — he knows what it looks like when it works, and he knows AMD doesn't have it yet.</div>
+      </div>
+    </div>
+    <div class="pain-card pain-02">
+      <div class="pain-num" style="color: var(--amd-red);">Pain 02</div>
+      <div class="pain-title">All Initiatives Are Critical</div>
+      <div class="pain-desc">AMD's Financial Analyst Day positions the company as a leader across six market segments simultaneously. Internally, every BU leader believes their programs are highest priority. Resource allocation defaults to political advocacy rather than value-based evidence. The loudest voice wins — and when export controls hit, there is no data to make the call fast.</div>
+      <div class="pain-diff">
+        <div class="pain-diff-label">Planview Differentiator</div>
+        <div class="pain-diff-text">Shared prioritization model scored against agreed business value criteria. Replaces "loudest voice wins" with data-backed decisions that Abhi Pant can defend to Lisa Su and Jean Hu.</div>
+      </div>
+    </div>
+    <div class="pain-card pain-03">
+      <div class="pain-num" style="color: var(--amber);">Pain 03</div>
+      <div class="pain-title">Acquisition Complexity Is Invisible</div>
+      <div class="pain-desc">ZT Systems + Silo AI integration risk is explicitly flagged in AMD's 8-K filings. Dependencies between legacy AMD, ZT, and Silo AI teams are being tracked in fragmented tools with no executive view of what is at risk, when, or what it costs to resolve. When a dependency slips, leadership finds out in the quarterly review — not in time to act.</div>
+      <div class="pain-diff">
+        <div class="pain-diff-label">Planview Differentiator</div>
+        <div class="pain-diff-text">End-to-end program visibility with dependency tracking, milestone health, and resource demand in one executive-readable view — connecting ZT, Silo AI, and legacy AMD programs in a single portfolio.</div>
+      </div>
+    </div>
+    <div class="pain-card pain-04">
+      <div class="pain-num" style="color: var(--purple);">Pain 04</div>
+      <div class="pain-title">IT Cannot Defend Its Portfolio</div>
+      <div class="pain-desc">Katrin Schulenburg's IT org is running SAP stabilization, Nexthink, internal AI programs, and acquisition integration demands simultaneously. Without a portfolio platform, IT cannot show CFO Jean Hu what it is funding, what it is delivering, and what it returns — making IT perpetually positioned as a cost center rather than a strategic enabler.</div>
+      <div class="pain-diff">
+        <div class="pain-diff-label">Planview Differentiator</div>
+        <div class="pain-diff-text">Shared visibility across strategy, planning, and delivery with financial controls that turn IT from a cost center into a defended portfolio — with the ROI data Schulenburg needs to win the budget conversation.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Planview Entry Points into AMD</div>
+  </div>
+
+  <div class="two-col">
+    <div class="entry-card">
+      <span class="entry-product-badge badge-spm">SPM — Strategic Portfolio Management</span>
+      <span class="entry-tag">GREENFIELD</span>
+      <div class="entry-title">Fund, Score, and Govern AMD's Strategic Portfolio</div>
+      <ul class="entry-bullets">
+        <li>Fund and score AMD's 50+ concurrent initiatives against agreed business value criteria</li>
+        <li>Dynamic scenario modeling: model cost of redirecting engineering capacity before committing</li>
+        <li>Single executive view connecting OpenAI commitment, ZT integration, and AXCENT work to funded resource pools</li>
+        <li>Replace political resourcing with evidence-based trade-off decisions at the SLT level</li>
+        <li>Gartner Magic Quadrant Leader, 4 consecutive years (2022-2025)</li>
+      </ul>
+      <div class="entry-champion">Champion: <strong>Abhi Pant</strong> + <strong>Katrin Schulenburg</strong></div>
+    </div>
+
+    <div class="entry-card">
+      <span class="entry-product-badge badge-ppm">PPM — Project Portfolio Management</span>
+      <span class="entry-tag">GREENFIELD</span>
+      <div class="entry-title">Portfolio Governance Above the Execution Layer</div>
+      <ul class="entry-bullets">
+        <li>Portfolio governance layer above Jira, MS Project, and Smartsheet — no rip-and-replace</li>
+        <li>Dependency-aware milestone tracking across ZT Systems integration and hyperscaler delivery</li>
+        <li>Resource capacity modeling: who is over-allocated and what does it cost to say yes to new demand</li>
+        <li>Turn AMD's Engineering PMO from political negotiation to data-backed prioritization</li>
+        <li>$150M+ cost avoidance already documented in AMD's prior PMO work with cruder tools</li>
+      </ul>
+      <div class="entry-champion">Champion: <strong>Robin Sullivan</strong> + <strong>Don McClure</strong></div>
+    </div>
+
+    <div class="entry-card">
+      <span class="entry-product-badge badge-agile">AgilePlace — Agile Delivery + Value Stream</span>
+      <span class="entry-tag">EXPANSION PLAY</span>
+      <div class="entry-title">Connect Jira Teams to the Portfolio Layer</div>
+      <ul class="entry-bullets">
+        <li>Connect AMD's Jira-based delivery teams to the portfolio layer without disrupting engineering</li>
+        <li>Visual work management across ROCm software, EPYC roadmap, and Instinct AI programs</li>
+        <li>Flow metrics: identify where work is bottlenecked across AMD's silicon-to-software pipeline</li>
+        <li>Supports hybrid Agile and waterfall delivery models across ZT Systems and Silo AI teams</li>
+      </ul>
+      <div class="entry-champion">Champion: Engineering and Data Center delivery teams</div>
+    </div>
+
+    <div class="entry-card">
+      <span class="entry-product-badge badge-roadmaps">Roadmaps — Product Roadmapping + Planning</span>
+      <span class="entry-tag">STRATEGIC PLAY</span>
+      <div class="entry-title">Scenario-Model Hyperscaler Commitments Before You Make Them</div>
+      <ul class="entry-bullets">
+        <li>Scenario-model the resource and timeline consequences of accepting hyperscaler customizations</li>
+        <li>Connect EPYC, Instinct, and Embedded product roadmaps to shared engineering capacity</li>
+        <li>Multi-year roadmap visibility across AMD's annual silicon cadence (Turin, Venice, Helios, MI450)</li>
+        <li>Strengthen external roadmap credibility by grounding commitments in internal capacity data</li>
+      </ul>
+      <div class="entry-champion">Champion: <strong>Christopher Simonich</strong>, EPYC Product Strategy</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== OUTREACH PLAYBOOK ===================== -->
+<div id="tab-outreach" class="page">
+
+  <div class="section-header">
+    <div class="section-title">Outreach Strategy — 10 Differentiated Entry Points</div>
+    <div class="section-tag">Each email and talk track opens a unique strategic conversation</div>
+  </div>
+
+  <div class="card full-width" style="margin-bottom: 24px;">
+    <table class="outreach-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Recipient</th>
+          <th>Subject Line</th>
+          <th>Angle</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr onclick="scrollToEmail('email-01')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">01</td>
+          <td><div style="font-weight: 500;">Abhi Pant (T1)</div><div style="font-size: 11px; color: var(--text-secondary);">Corp VP Strategy</div></td>
+          <td><div class="outreach-subject">The portfolio infrastructure gap behind AMD's execution ambitions</div></td>
+          <td><div class="outreach-angle">Execution operating model</div></td>
+          <td><span class="priority-immediate">IMMEDIATE</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-02')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">02</td>
+          <td><div style="font-weight: 500;">Katrin Schulenburg (T1)</div><div style="font-size: 11px; color: var(--text-secondary);">Corp VP IT</div></td>
+          <td><div class="outreach-subject">AMD's IT portfolio is growing faster than its governance can keep up</div></td>
+          <td><div class="outreach-angle">IT credibility and strategic value</div></td>
+          <td><span class="priority-immediate">IMMEDIATE</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-03')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">03</td>
+          <td><div style="font-weight: 500;">Robin Sullivan</div><div style="font-size: 11px; color: var(--text-secondary);">Director, Program Mgmt</div></td>
+          <td><div class="outreach-subject">Managing 25-plus initiatives at once is not a process problem</div></td>
+          <td><div class="outreach-angle">Practitioner pain + PMO governance</div></td>
+          <td><span class="priority-week2">WEEK 2</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-04')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">04</td>
+          <td><div style="font-weight: 500;">Don McClure (T1)</div><div style="font-size: 11px; color: var(--text-secondary);">Chief of Staff</div></td>
+          <td><div class="outreach-subject">When hyperscaler commitments hit delivery reality</div></td>
+          <td><div class="outreach-angle">Server Solutions delivery risk</div></td>
+          <td><span class="priority-week2">WEEK 2</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-05')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">05</td>
+          <td><div style="font-weight: 500;">Abhi Pant (T2)</div><div style="font-size: 11px; color: var(--text-secondary);">Corp VP Strategy</div></td>
+          <td><div class="outreach-subject">The resource allocation question that does not have a clean answer yet</div></td>
+          <td><div class="outreach-angle">Political vs value-based prioritization</div></td>
+          <td><span class="priority-week2">WEEK 2</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-06')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">06</td>
+          <td><div style="font-weight: 500;">Christopher Simonich (T1)</div><div style="font-size: 11px; color: var(--text-secondary);">Sr. Director, EPYC Strategy</div></td>
+          <td><div class="outreach-subject">EPYC's roadmap discipline is a competitive advantage and a portfolio challenge</div></td>
+          <td><div class="outreach-angle">Product portfolio + roadmap credibility</div></td>
+          <td><span class="priority-week2">WEEK 2</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-07')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">07</td>
+          <td><div style="font-weight: 500;">Katrin Schulenburg (T2)</div><div style="font-size: 11px; color: var(--text-secondary);">Corp VP IT</div></td>
+          <td><div class="outreach-subject">What the ZT Systems integration is doing to AMD's IT demand picture</div></td>
+          <td><div class="outreach-angle">Acquisition integration on IT capacity</div></td>
+          <td><span class="priority-week3">WEEK 3</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-08')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">08</td>
+          <td><div style="font-weight: 500;">Robin Sullivan (T2)</div><div style="font-size: 11px; color: var(--text-secondary);">Director, Program Mgmt</div></td>
+          <td><div class="outreach-subject">The credibility cost of subjective prioritization in a resource-constrained PMO</div></td>
+          <td><div class="outreach-angle">Professional credibility + career risk</div></td>
+          <td><span class="priority-week3">WEEK 3</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-09')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">09</td>
+          <td><div style="font-weight: 500;">Don McClure (T2)</div><div style="font-size: 11px; color: var(--text-secondary);">Chief of Staff</div></td>
+          <td><div class="outreach-subject">AMD's data center delivery commitments need more than a project tracker</div></td>
+          <td><div class="outreach-angle">Portfolio platform vs project tracker</div></td>
+          <td><span class="priority-week3">WEEK 3</span></td>
+        </tr>
+        <tr onclick="scrollToEmail('email-10')" style="cursor: pointer;">
+          <td style="font-weight: 600; color: var(--text-secondary);">10</td>
+          <td><div style="font-weight: 500;">Christopher Simonich (T2)</div><div style="font-size: 11px; color: var(--text-secondary);">Sr. Director, EPYC Strategy</div></td>
+          <td><div class="outreach-subject">Strategic portfolio decisions in a product line that cannot afford to slow down</div></td>
+          <td><div class="outreach-angle">Commitment risk + roadmap reliability</div></td>
+          <td><span class="priority-week4">WEEK 4</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-header"><div class="section-title">Full Emails + Talk Tracks</div></div>
+
+  <div class="email-cards">
+
+    <div class="email-card" id="email-01">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Abhi Pant · Corp VP, Strategy, Operations &amp; Programs · Touch 1</div>
+          <div class="email-subject">The portfolio infrastructure gap behind AMD's execution ambitions</div>
+        </div>
+        <span class="priority-immediate">IMMEDIATE</span>
+      </div>
+      <div class="email-body">
+        <p>Abhi —</p>
+        <p>You joined AMD in January 2025 with a mandate that is genuinely unusual: build the execution operating model for a company running four major transformation tracks simultaneously, all of them consequential, none of them optional.</p>
+        <p>AI platform pivot. ZT Systems and Silo AI integration. SAP stabilization carry-forward. Post-layoff resource reallocation. Each one alone is a multi-year program. Running all four at once, with the OpenAI and Meta delivery commitments on the clock, requires infrastructure that AMD does not currently have.</p>
+        <p>At NetApp and Cisco, you operated at this scale with portfolio governance in place. AMD is attempting the same level of strategic complexity with Jira, Excel, Smartsheet, and Microsoft Project. There is no single view of what is funded, what is at risk, and what gets deprioritized when conditions change overnight — as they did when the MI308 export controls hit.</p>
+        <p>I am at Planview. We build the platform that connects funded strategy to delivery execution in real time. I would like 25 minutes to share what we are seeing at other semiconductor companies navigating exactly this kind of multi-track transformation — and to understand where the biggest gaps are in AMD's current model.</p>
+        <p>Worth a conversation?</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview<br>kush.parikh@planview.com</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Abhi, this is Kush Parikh at Planview. I will be brief. You joined AMD in January 2025 to build AMD's execution operating model. You have done this before at Cisco and NetApp — and you know what that infrastructure looks like when it is working. My question is whether AMD has that infrastructure today, or whether you are trying to run a four-track transformation without it. I work with semiconductor and technology companies doing exactly what AMD is doing right now, and I would like 25 minutes to compare notes. Is there a good time this week or next?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-02">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Katrin Schulenburg · Corp VP, Information Technology · Touch 1</div>
+          <div class="email-subject">AMD's IT portfolio is growing faster than its governance can keep up</div>
+        </div>
+        <span class="priority-immediate">IMMEDIATE</span>
+      </div>
+      <div class="email-body">
+        <p>Katrin —</p>
+        <p>You have been at AMD for 27 years and watched IT evolve from infrastructure function to strategic enabler. The Forbes piece captured what you have been building toward — IT not as a cost center, but as a platform for competitive differentiation.</p>
+        <p>The challenge you face now is that the portfolio has grown faster than its governance infrastructure. SAP RISE stabilization. Nexthink deployment. Acquisition integration demands from ZT Systems and Silo AI. Internal AI chatbot programs across functions. Each of these has a sponsor, a budget, and a delivery team. None of them are visible together in a way that lets you walk into a CFO conversation and say: this is what IT is funding, this is what it is delivering, and this is what it returns.</p>
+        <p>That is not a resource problem or a process problem. It is a portfolio visibility problem. And it is exactly what Planview is built to solve for IT organizations at your level of maturity and scale.</p>
+        <p>I noticed we have a prior relationship at AMD going back several years. I would like to reconnect in the context of where AMD's IT portfolio stands today. Would 20 minutes work?</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview<br>kush.parikh@planview.com</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Katrin, this is Kush Parikh at Planview — we have a history with AMD going back to the early 2000s. I am reaching out because of a specific problem I want to understand. Your IT portfolio has expanded significantly — SAP, Nexthink, acquisition integration, internal AI programs — and my question is whether you have a single governance view across all of it that lets you defend each investment to leadership. If the answer is yes, I would love to understand how you have done it. If the answer is not quite, I think we have something worth talking about. Can we find 20 minutes?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-03">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Robin Sullivan · Director, Program Management · Touch 1</div>
+          <div class="email-subject">Managing 25-plus initiatives at once is not a process problem</div>
+        </div>
+        <span class="priority-week2">WEEK 2</span>
+      </div>
+      <div class="email-body">
+        <p>Robin —</p>
+        <p>Before the restructuring, you governed 25-plus Engineering Improvement Initiatives in AMD's PMO and documented over $150M in cost avoidance. That is an extraordinary outcome — and it was achieved with tools that were not designed for that level of complexity.</p>
+        <p>The question I keep coming back to is: how many of those prioritization calls were genuinely data-backed, and how many came down to who was in the room and how loudly they argued? At the scale AMD operates, both happen. The problem is that when a call gets challenged six months later — by leadership, by a BU head, by someone who lost a resource argument — you need the data to stand behind it.</p>
+        <p>What AMD does not currently have is a portfolio platform that scores initiatives against agreed business value criteria, models resource trade-offs before the decision, and creates a record of why things were prioritized the way they were. That is what Planview does — and it changes the PMO from a political referee to a governance function with real credibility.</p>
+        <p>I would like 20 minutes to understand what the current prioritization model looks like in Global Operations, and whether the tools you have today are sufficient for what AMD is trying to do in 2026.</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Robin, this is Kush Parikh at Planview. I am calling because of something specific — before the 2024 restructuring, you governed 25-plus EI programs in AMD's PMO and drove $150M in cost avoidance. That is an enormous result, and I want to ask directly: what did the prioritization process look like? Because the organizations I talk to at AMD's scale and complexity tell me the hardest part is not running the programs — it is defending the prioritization calls when someone upstream decides the order should have been different. I am curious whether that dynamic exists at AMD today, and whether the tools you are working with make it better or worse. Can we find 20 minutes to talk through it?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-04">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Don McClure · Chief of Staff, Server Solutions Group · Touch 1</div>
+          <div class="email-subject">When hyperscaler commitments hit delivery reality</div>
+        </div>
+        <span class="priority-week2">WEEK 2</span>
+      </div>
+      <div class="email-body">
+        <p>Don —</p>
+        <p>From the Chief of Staff seat in Server Solutions, you have visibility into the most consequential delivery commitments AMD has ever made. The OpenAI 6GW agreement. The expanded Meta partnership. The Helios rack-scale platform. These are not roadmap items — they are public, time-bound, investor-watched commitments.</p>
+        <p>What I am curious about is the infrastructure behind the delivery. When a dependency between the ZT Systems integration and the OpenAI program timeline slips by two weeks, how quickly does that surface to leadership? When an engineering resource gets pulled from MI450 to support a hyperscaler customization request, what is the ripple effect across the other programs in the portfolio — and who sees it before it becomes a problem?</p>
+        <p>PMP-certified practitioners in your position know the difference between a project tracker and a portfolio platform. The former tells you what happened. The latter lets you act before it happens. AMD is operating at a scale where the second capability is no longer optional.</p>
+        <p>I would like 20 minutes to understand how dependency and risk visibility works across the Server Solutions delivery portfolio today.</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Don, this is Kush Parikh at Planview. I am calling because of a specific question about the Server Solutions delivery portfolio. AMD has publicly committed to 6GW of GPU deliveries to OpenAI and a multi-year GPU ramp with Meta. Those commitments involve the ZT Systems integration, the Helios platform, and multiple engineering streams running in parallel. My question is direct: when a dependency between those programs slips, how quickly does that surface — and who has the portfolio view to act before it becomes a delivery risk? You have a PMP background, so you know exactly what I am describing. I would like 20 minutes to compare notes. Is there a good time this week?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-05">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Abhi Pant · Corp VP, Strategy, Operations &amp; Programs · Touch 2</div>
+          <div class="email-subject">The resource allocation question that does not have a clean answer yet</div>
+        </div>
+        <span class="priority-week2">WEEK 2</span>
+      </div>
+      <div class="email-body">
+        <p>Abhi —</p>
+        <p>Following up on my earlier note. I want to be more direct about the specific question I think is hardest to answer at AMD right now.</p>
+        <p>When Lisa Su commits AMD to being a leader across data center AI, client, embedded, gaming, and communications simultaneously — and when every BU general manager has a roadmap that requires engineering resources they believe are non-negotiable — how does AMD decide which programs get capacity and which do not? Not in theory. In practice, in Q2 2026, with an MI450 delivery timeline on the board and two recently acquired organizations competing for the same resource pool.</p>
+        <p>At Cisco and NetApp, that question had an infrastructure answer: a portfolio governance system that scored programs against agreed business value criteria and made the trade-offs visible before they became political. AMD does not have that system yet. And the cost of not having it shows up every time a reprioritization is required and the data is not there to make it fast.</p>
+        <p>I am not asking for a vendor conversation. I am asking for 25 minutes to understand how AMD is approaching this problem, and to share what we see working at peer companies. Are you open to it?</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Abhi, Kush Parikh at Planview again — I sent you a note a week or two ago. I want to try a different angle. The specific question I am trying to understand is how AMD makes resource allocation decisions when every BU believes their programs are the highest priority. You have managed that dynamic at Cisco and NetApp with infrastructure in place. I suspect AMD does not have that infrastructure yet. I am not trying to pitch software — I am trying to understand whether the problem I am describing matches what you are experiencing, and if it does, to share what we see working at other companies in your position. Can we find 25 minutes?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-06">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Christopher Simonich · Sr. Director, EPYC Product Strategy · Touch 1</div>
+          <div class="email-subject">EPYC's roadmap discipline is a competitive advantage and a portfolio challenge</div>
+        </div>
+        <span class="priority-week2">WEEK 2</span>
+      </div>
+      <div class="email-body">
+        <p>Christopher —</p>
+        <p>EPYC's execution discipline is one of the more remarkable stories in enterprise silicon. Turin 9005 delivery, the Venice roadmap, the AI server configuration variants for hyperscaler customers — managing all of it on an annual cadence while Intel is undergoing its own structural reset requires a level of portfolio clarity that most product organizations never achieve.</p>
+        <p>The challenge at the scale AMD is now operating is that the EPYC portfolio does not exist in isolation. Engineering resources flow across Instinct AI, Embedded, Client, and hyperscaler customization requests. When a major customer asks for a custom configuration — and that request looks compelling on its own terms — the question is whether you can model the resource and timeline consequences across the full EPYC and Instinct roadmap before you commit.</p>
+        <p>Your background in strategic planning at Intel tells me you already know what that capability looks like when it is in place. I am curious whether it is in place at AMD today, and if not, what the current model looks like for scenario-testing roadmap decisions before they become commitments.</p>
+        <p>Would 20 minutes be worth it?</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Christopher, this is Kush Parikh at Planview. I am calling about something specific to the EPYC portfolio. AMD is managing the Turin, Venice, and AI server roadmaps on an annual cadence while simultaneously fielding hyperscaler customization requests and sharing engineering resources with the Instinct AI program. My question is whether you have the ability to model the resource consequences of a new customization commitment before you say yes to it — or whether that analysis happens after the fact. You came from Intel's strategic planning function, so you know what that capability looks like when it is built. I would like 20 minutes to understand whether AMD has it today, and to share what we see working at comparable product organizations. Can we find time?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-07">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Katrin Schulenburg · Corp VP, Information Technology · Touch 2</div>
+          <div class="email-subject">What the ZT Systems integration is doing to AMD's IT demand picture</div>
+        </div>
+        <span class="priority-week3">WEEK 3</span>
+      </div>
+      <div class="email-body">
+        <p>Katrin —</p>
+        <p>I wanted to follow up with a more specific question than my last note.</p>
+        <p>ZT Systems closed in March 2025. Silo AI came in 2024. Both are absorbed into the Data Center Solutions BU — which means IT's support, integration, and infrastructure demands have expanded materially, without a clear portfolio view of what new commitments have been made, what existing programs are being displaced, and where capacity is actually stretched.</p>
+        <p>AMD's own 8-K filings flag integration risk for both acquisitions. That risk is not just a business development concern — it lands in IT, in program management, and in the governance of systems that span legacy AMD and acquired organizations simultaneously.</p>
+        <p>My question is whether your IT portfolio governance gives you real-time visibility into how acquisition integration demands are competing with the programs you already have in flight — or whether you are finding out about conflicts at the point where they become escalations.</p>
+        <p>I think there is a 20-minute conversation worth having about how other IT organizations at your scale are managing exactly this dynamic. Are you open to it?</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Katrin, Kush Parikh at Planview — I sent you a note a couple weeks ago. I want to be more specific about why I am calling. ZT Systems and Silo AI are both in flight in IT now. My question is whether you have a single governance view that shows how those integration demands are competing with your existing IT portfolio — SAP stabilization, Nexthink, the internal AI programs. Or whether that picture only comes together when something escalates. I am working with IT organizations navigating similar acquisition integration complexity, and I think there is something genuinely useful in a 20-minute conversation. Can we find the time?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-08">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Robin Sullivan · Director, Program Management · Touch 2</div>
+          <div class="email-subject">The credibility cost of subjective prioritization in a resource-constrained PMO</div>
+        </div>
+        <span class="priority-week3">WEEK 3</span>
+      </div>
+      <div class="email-body">
+        <p>Robin —</p>
+        <p>A follow-up to my earlier note — with a more pointed question.</p>
+        <p>In a PMO governing 25-plus initiatives across engineering and operations, the prioritization calls that are hardest to defend are not the ones that fail. They are the ones that succeed, but where someone upstream later decides the order should have been different — and the PMO has no data record to explain why the decision was made the way it was.</p>
+        <p>That is a credibility problem. And it is not solved by better processes or better tracking tools. It is solved by a portfolio governance model that scores initiatives against agreed business value criteria before the call is made, creates a visible audit trail of the trade-off analysis, and lets the PMO say: here is why we prioritized Program A over Program B, here is the business value data that supported that decision, and here is what we would have had to give up to do it the other way.</p>
+        <p>At AMD's current scale and complexity, the PMO that operates with that infrastructure has a fundamentally different conversation with leadership than the one that does not. I think you have been doing exceptional work with the tools available. I am curious whether you have thought about what the infrastructure gap is costing you.</p>
+        <p>Worth 20 minutes?</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Robin, Kush Parikh at Planview again. I want to ask a direct question. When a prioritization call you made gets challenged by a BU head or someone in leadership six months later — do you have the data to defend it? Not just what was decided, but why: what the trade-off analysis was, what the alternatives cost, what would have been deprioritized if the decision had gone the other way. If you do not have that data readily available, that is the gap I work on. I would like 20 minutes to understand whether that dynamic exists in AMD's PMO today and to share what a different model looks like. Can we find time?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-09">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Don McClure · Chief of Staff, Server Solutions Group · Touch 2</div>
+          <div class="email-subject">AMD's data center delivery commitments need more than a project tracker</div>
+        </div>
+        <span class="priority-week3">WEEK 3</span>
+      </div>
+      <div class="email-body">
+        <p>Don —</p>
+        <p>Following up on my earlier note. I want to draw a distinction that I think is relevant to the Chief of Staff role in Server Solutions specifically.</p>
+        <p>A project tracker tells you the status of what is in motion. A portfolio platform tells you what is at risk before it becomes a status. The difference matters most in exactly the kind of environment Server Solutions is operating in — where multiple delivery streams are interdependent, commitments are public and investor-watched, and a slip in one program has consequences for others that do not surface until it is too late to respond without cost.</p>
+        <p>AMD's data center delivery portfolio right now includes ZT Systems integration programs, Helios rack-scale preparation, MI450 delivery for OpenAI, and the expanded Meta supply agreement. These are not independent. When something moves in one of them, it moves in the others. The question is whether that dependency picture is visible in real time — or whether it is reconstructed after the fact when someone asks why the timeline shifted.</p>
+        <p>I would like 20 minutes to understand what the current visibility model looks like across these programs, and to share what we see working at companies managing comparable delivery complexity.</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Don, Kush Parikh at Planview again. I want to try a different angle from my first call. The question I am really asking is about the distinction between a project tracker and a portfolio platform. A project tracker reports on what is happening. A portfolio platform surfaces what is about to happen. In Server Solutions right now — with ZT integration, Helios, OpenAI delivery, and Meta all in motion simultaneously — I want to understand which of those two things you have. Because if it is the first one, there is a visibility gap that shows up at the worst possible time. Can we find 20 minutes?"</div>
+      </div>
+    </div>
+
+    <div class="email-card" id="email-10">
+      <div class="email-header">
+        <div>
+          <div class="email-to">To: Christopher Simonich · Sr. Director, EPYC Product Strategy · Touch 2</div>
+          <div class="email-subject">Strategic portfolio decisions in a product line that cannot afford to slow down</div>
+        </div>
+        <span class="priority-week4">WEEK 4</span>
+      </div>
+      <div class="email-body">
+        <p>Christopher —</p>
+        <p>Following up on my earlier note about the EPYC portfolio.</p>
+        <p>The competitive window AMD has in server CPU is not permanent. Intel is restructuring. Arm-based server alternatives are maturing. The EPYC franchise depends on executing the roadmap — Turin, Venice, the AI server configuration layer — without losing pace to a customization request that consumes engineering capacity and shifts the annual cadence.</p>
+        <p>The strategic portfolio question I want to put to you directly is: when AMD receives a hyperscaler customization request that looks compelling on its own terms, what is the model for understanding what it costs the rest of the roadmap before you commit? Not just engineering effort. Resource availability across EPYC, Instinct, and Embedded. Timeline implications for the next generation. Revenue probability across the full portfolio if the customization delays a planned launch.</p>
+        <p>That is a scenario modeling question — and it requires infrastructure that goes beyond what a product roadmap document provides. If AMD has that infrastructure today, I would genuinely like to understand it. If it does not, I think there is a conversation worth having about what it would look like.</p>
+        <p>Kush Parikh<br>Enterprise Account Executive, Planview</p>
+      </div>
+      <div class="talk-track">
+        <div class="talk-track-label">Phone Talk Track</div>
+        <div class="talk-track-text">"Christopher, Kush Parikh at Planview — following up from a few weeks back. I want to ask the EPYC portfolio question more directly. When a hyperscaler comes with a customization request, do you have the infrastructure to model what it costs the rest of the roadmap before you say yes? Not just engineering estimate — resource draw across Instinct and Embedded, timeline shift for Venice, revenue probability on the delayed programs. That is a scenario modeling capability. I am genuinely curious whether AMD has it, and if not, what the current model for that kind of decision looks like. Can we find 20 minutes?"</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== LIVE INTEL ===================== -->
+<div id="tab-livefeed" class="page">
+
+  <div class="section-header">
+    <div class="section-title">Live Intelligence Feed</div>
+    <div class="section-tag">Auto-refreshed · Google News + Yahoo Finance RSS</div>
+  </div>
+
+  <div style="background: linear-gradient(135deg, #003D2B 0%, #006644 100%); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+    <div>
+      <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.55); margin-bottom: 6px;">Live AMD Intelligence</div>
+      <div style="font-size: 15px; font-weight: 500; color: white; margin-bottom: 4px;">Real-time news pulled from Google News, Yahoo Finance &amp; industry RSS feeds</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.6);">Auto-categorised by topic · Filtered by Financial, Product &amp; AI, Leadership, Technology, Competitive, Risk &amp; Regulatory</div>
+    </div>
+    <a href="amd_news.html" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: white; color: #003D2B; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 8px; text-decoration: none; white-space: nowrap; flex-shrink: 0;">
+      Open Live Feed ↗
+    </a>
+  </div>
+
+  <div class="feed-controls">
+    <button class="feed-filter active" onclick="filterFeed('all', this)">All</button>
+    <button class="feed-filter" onclick="filterFeed('deal', this)">Deal Intel</button>
+    <button class="feed-filter" onclick="filterFeed('strategy', this)">AMD Strategy</button>
+    <button class="feed-filter" onclick="filterFeed('risk', this)">Risk Signals</button>
+    <button class="feed-filter" onclick="filterFeed('persona', this)">Persona Intel</button>
+    <button class="feed-filter" onclick="filterFeed('crm', this)">CRM Activity</button>
+  </div>
+
+  <div id="feed-container">
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--amd-red); margin-bottom: 6px;">Risk Triggers</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+          <span style="font-size: 10px; background: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 3px;">export controls</span>
+          <span style="font-size: 10px; background: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 3px;">China trade</span>
+          <span style="font-size: 10px; background: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 3px;">inventory charge</span>
+          <span style="font-size: 10px; background: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 3px;">tariffs</span>
+        </div>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1E40AF; margin-bottom: 6px;">Entry Signals</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+          <span style="font-size: 10px; background: #DBEAFE; color: #1E40AF; padding: 2px 6px; border-radius: 3px;">Abhi Pant</span>
+          <span style="font-size: 10px; background: #DBEAFE; color: #1E40AF; padding: 2px 6px; border-radius: 3px;">ZT Systems</span>
+          <span style="font-size: 10px; background: #DBEAFE; color: #1E40AF; padding: 2px 6px; border-radius: 3px;">portfolio</span>
+          <span style="font-size: 10px; background: #DBEAFE; color: #1E40AF; padding: 2px 6px; border-radius: 3px;">resource allocation</span>
+        </div>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--pv-green); margin-bottom: 6px;">Deal Accelerators</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+          <span style="font-size: 10px; background: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 3px;">OpenAI delivery</span>
+          <span style="font-size: 10px; background: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 3px;">MI450 slip</span>
+          <span style="font-size: 10px; background: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 3px;">new VP Strategy</span>
+          <span style="font-size: 10px; background: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 3px;">PPM initiative</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pinned-item" data-cat="crm deal">
+      <div class="pinned-label">📌 Pinned — CRM Activity</div>
+      <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Katrin Schulenburg — Most Recent Account Activity · Apr 13, 2026</div>
+      <div style="font-size: 12px; color: var(--text-secondary);">Last activity logged against Schulenburg's Salesforce record on April 13, 2026 — the most recent active contact in the entire AMD account. Schulenburg confirmed at Corp VP IT with direct email (katrin.schulenburg@amd.com) and phone on record. 27-year AMD veteran with confirmed Nexthink + SAP AXCENT ownership. Most credible re-entry point into existing Planview relationship.</div>
+      <span class="feed-tag tag-crm">CRM Active</span>
+    </div>
+
+    <div class="pinned-item" data-cat="deal">
+      <div class="pinned-label">📌 Pinned — Account History Signal</div>
+      <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">PPM Upsell Lost in 2017 — Learn From It</div>
+      <div style="font-size: 12px; color: var(--text-secondary);">Salesforce history shows a $150K PPM upsell attempt in 2017 that closed lost. The 2022 renewal (valued at $37K) also churned. This is the most important historical signal — AMD has been approached for portfolio management before and said no. Current approach must be positioned as execution infrastructure for AMD's 2026 strategic agenda, not as PPM software replacement. Abhi Pant is the new variable that did not exist in 2017 or 2022.</div>
+      <span class="feed-tag tag-deal">Deal Signal</span>
+    </div>
+
+    <div class="feed-item" data-cat="strategy">
+      <div class="feed-source-icon src-earnings">Q4</div>
+      <div>
+        <div class="feed-date">Feb 3, 2026 · AMD Q4 2025 Earnings</div>
+        <div class="feed-title">AMD Records Best-Ever Revenue: $25.8B FY2025 · Lisa Su: "Entering 2026 with strong momentum"</div>
+        <div class="feed-body">"2025 was a defining year for AMD, with record revenue and earnings driven by strong execution and broad-based demand for our high-performance and AI platforms." CFO Jean Hu: "We achieved record non-GAAP operating income and free cash flow, while increasing our strategic investments to support long-term growth." Data Center revenue led growth. FY2025 results included approx. $440M in net inventory and related charges from U.S. export control requirements on MI308.</div>
+        <span class="feed-tag tag-strategy">Earnings Signal</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="strategy">
+      <div class="feed-source-icon src-news" style="background: #1D4ED8;">6GW</div>
+      <div>
+        <div class="feed-date">Feb 24, 2026 · AMD Press Release</div>
+        <div class="feed-title">AMD and Meta Announce Expanded Strategic Partnership — 6 Gigawatts of AMD GPUs</div>
+        <div class="feed-body">Multi-year, multi-generation collaboration across Instinct GPUs, EPYC CPUs, and rack-scale AI systems. AMD issued Meta a performance-based warrant for up to 160M AMD shares, vesting as specific Instinct GPU shipment milestones are achieved. First tranche vests with initial 1GW of shipments. CFO Jean Hu: "We expect this partnership to drive substantial multi-year revenue growth." This is the most consequential active delivery commitment in AMD's portfolio — and it is tracked across Jira, Excel, and Smartsheet.</div>
+        <span class="feed-tag tag-strategy">Strategy</span>
+        <span class="feed-tag tag-risk" style="margin-left: 4px;">Portfolio Risk</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="strategy">
+      <div class="feed-source-icon src-news">AI</div>
+      <div>
+        <div class="feed-date">Jan 5, 2026 · CES 2026 Keynote</div>
+        <div class="feed-title">AMD CES 2026: "AI Everywhere, for Everyone" — MI440X, MI500 preview, Helios rack-scale, Ryzen AI Halo</div>
+        <div class="feed-body">Lisa Su keynoted CES 2026 with AMD's broadest product announcement in company history: MI440X GPU for enterprise deployments, MI500 series preview (1,000x AI performance vs MI300X), Ryzen AI Halo developer platform (Q2 2026), Ryzen AI Embedded for autonomous systems and humanoid robotics. $150M commitment to bring AI into classrooms. Partners: OpenAI, Luma AI, Liquid AI, World Labs, Blue Origin, AstraZeneca. Every one of these commitments competes for the same engineering resource pool with no portfolio governance platform.</div>
+        <span class="feed-tag tag-strategy">Strategy</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="risk">
+      <div class="feed-source-icon src-sec">8-K</div>
+      <div>
+        <div class="feed-date">2025 · AMD 8-K / 10-K Risk Disclosures</div>
+        <div class="feed-title">AMD Flags ZT Systems + Silo AI Integration Risk On Record</div>
+        <div class="feed-body">AMD's own public filings explicitly flag risks that ZT Systems and Silo AI businesses may not be integrated successfully. Synergy realization timelines are uncertain. Program interdependencies between legacy AMD, ZT, and Silo AI are not visible in a unified portfolio view. This is a formal risk disclosure — meaning AMD's board, investors, and leadership are aware of it. The absence of portfolio governance infrastructure is not an opinion — it is on record.</div>
+        <span class="feed-tag tag-risk">Regulatory Risk</span>
+        <span class="feed-tag tag-deal" style="margin-left: 4px;">Entry Point</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="risk">
+      <div class="feed-source-icon src-news" style="background: #DC2626;">EXP</div>
+      <div>
+        <div class="feed-date">2025 · U.S. Export Control Update</div>
+        <div class="feed-title">MI308 Export Controls Force Rapid AMD Portfolio Reprioritization — $440M Inventory Charge</div>
+        <div class="feed-body">New U.S. license requirements on AMD Instinct MI308 forced AMD to rapidly redirect engineering capacity and customer programs overnight. AMD recorded approximately $440M in net inventory and related charges in FY2025 as a result. No scenario modeling capability existed at the time to model trade-offs before the decision became a cost. This is the clearest real-world evidence of what a portfolio governance gap costs AMD in practice.</div>
+        <span class="feed-tag tag-risk">Risk Signal</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="persona">
+      <div class="feed-source-icon src-linkedin">AP</div>
+      <div>
+        <div class="feed-date">Jan 2025 · LinkedIn / TheOrg.com</div>
+        <div class="feed-title">Abhi Pant Joins AMD as Corp VP Strategy, Operations &amp; Programs</div>
+        <div class="feed-body">Abhi Pant joined AMD in January 2025 from NetApp (SVP, Strategic Business Operations, 2022-2024) and before that Cisco (VP Strategy, Planning &amp; Business Operations, 2017-2022). Also: Chief of Staff for Networking Group at Cisco. Earlier: Walmart Global eCommerce Head of Strategy. Education: Cornell Johnson MBA. This is the new variable in the AMD account — a leader who has built execution operating models at scale before, who knows what portfolio governance infrastructure looks like, and who joined specifically to build it at AMD. Latest update: LinkedIn shows Pant has joined Workday as VP of Product for AI Agents — confirm current AMD status before outreach.</div>
+        <span class="feed-tag tag-persona">Persona Intel</span>
+        <span class="feed-tag tag-risk" style="margin-left: 4px;">Verify Status</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="strategy">
+      <div class="feed-source-icon src-news" style="background: #0A66C2;">SAM</div>
+      <div>
+        <div class="feed-date">Mar 30, 2026 · AMD Press Release</div>
+        <div class="feed-title">Samsung and AMD Expand Strategic Collaboration on Next-Generation AI Memory Solutions</div>
+        <div class="feed-body">AMD and Samsung expand collaboration on AI memory architecture for next-generation Instinct GPU platforms. This is the fifth major hyperscaler or strategic partner announcement in 90 days (OpenAI, Meta, NAVER Cloud, Upstage, Samsung). Each partnership adds resource commitments, engineering deliverables, and dependency complexity to AMD's portfolio — all managed without a unified governance platform.</div>
+        <span class="feed-tag tag-strategy">New Partnership</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="persona">
+      <div class="feed-source-icon src-linkedin">KS</div>
+      <div>
+        <div class="feed-date">2024-2025 · Nexthink Experience + Forbes</div>
+        <div class="feed-title">Katrin Schulenburg — Forbes Feature + Nexthink Experience 2024 Presenter</div>
+        <div class="feed-body">Schulenburg was featured in Forbes on AMD's AI transformation strategy — publicly positioning IT as a strategic enabler, not a cost center. Also presented at Nexthink Experience 2024 on AMD's Digital Employee Experience (DEX) approach. Both signals confirm a technology leader who invests in platforms with measurable business outcomes and is comfortable with public advocacy for IT's strategic value. The Forbes feature is a direct hook — her public positioning is exactly what Planview enables her to defend internally.</div>
+        <span class="feed-tag tag-persona">Persona Intel</span>
+      </div>
+    </div>
+
+    <div class="feed-item" data-cat="strategy">
+      <div class="feed-source-icon src-news" style="background: #7C3AED;">ROC</div>
+      <div>
+        <div class="feed-date">Sep 2025 · AMD IT Blog</div>
+        <div class="feed-title">"Maturing IT and Expanding AI" — AMD's Vision for Operational Excellence</div>
+        <div class="feed-body">AMD published internal IT strategy vision blog titled "Maturing IT and Expanding AI: The AMD Vision for Operational Excellence." Focus: AI expansion, streamlined operations, and improved user experience to drive enterprise-wide excellence. This is Schulenburg's IT org publicly declaring a maturity-driven IT strategy — the exact narrative that positions Planview as the next logical step in IT portfolio governance.</div>
+        <span class="feed-tag tag-strategy">IT Signal</span>
+        <span class="feed-tag tag-deal" style="margin-left: 4px;">Schulenburg Hook</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== NEXT STEPS ===================== -->
+<div id="tab-nextsteps" class="page">
+
+  <div class="section-header">
+    <div class="section-title">Recommended Actions — 30 / 60 / 90 Day Plan</div>
+  </div>
+
+  <div style="background: var(--pv-green); color: white; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; line-height: 1.6;">
+    <strong>Primary objective:</strong> Secure a 25-minute discovery call with Abhi Pant (Corp VP Strategy, Operations &amp; Programs) within 30 days. Everything in this plan is built to support that conversation. Note: confirm Abhi Pant's current status at AMD before outreach — LinkedIn signals a possible recent move to Workday. If confirmed departed, shift primary target to Katrin Schulenburg.
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div>
+        <div class="phase-title">Now — 30 Days</div>
+        <div class="phase-sub">Activate the account · Immediate outreach to top two targets</div>
+      </div>
+    </div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Verify Abhi Pant's current AMD status</strong> — LinkedIn signals a possible move to Workday as VP Product for AI Agents. Confirm before sending Email 01. If departed, advance Schulenburg to primary buyer and identify replacement in Strategy/Ops function.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Send Email 01 + Talk Track to Abhi Pant</strong> — execution infrastructure gap angle. Target: 25-minute discovery call within 14 days. Do not pitch Planview — pitch the conversation about AMD's portfolio infrastructure.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Send Email 02 + Talk Track to Katrin Schulenburg</strong> — IT portfolio credibility angle. Schulenburg has active Salesforce record with activity April 13, 2026. Reference prior Planview relationship as warm opener. Target: 20-minute reconnect call.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Connect with Robin Sullivan on LinkedIn</strong> — share PMO governance content ahead of cold email. Week 2 target for Email 03. Sullivan is the most likely practitioner champion and the most natural entry point from the PMO angle.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Validate Chris Wire's charter</strong> — IT infrastructure vs IT governance scope. Do this before investing outreach. Path: warm intro via Schulenburg relationship or existing AMD contact network in Salesforce.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Build AMD account map in Salesforce</strong> — add Abhi Pant, Robin Sullivan, Don McClure, Christopher Simonich with roles, entry angles, and CRM notes. All 6 personas documented with maturity profile and outreach status.</div></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <div>
+        <div class="phase-title">30–60 Days</div>
+        <div class="phase-sub">Second wave outreach · Discovery calls · Qualification</div>
+      </div>
+    </div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Send Emails 03, 04, 05, 06</strong> — Robin Sullivan (PMO governance), Don McClure (delivery risk), Abhi Pant Touch 2 (resource allocation), Christopher Simonich (EPYC roadmap credibility). All paired with talk tracks for parallel phone outreach.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Follow up all initial emails with talk tracks</strong> — target 25-minute discovery calls, not demos. Discovery goal with Abhi Pant: current state of AMD's portfolio infrastructure and execution operating model. Discovery goal with Schulenburg: IT portfolio scope and where ROI visibility is weakest.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Confirm ZT Systems integration program structure</strong> — who owns it, what tools are in use, where the gaps are. Path: Don McClure (Chief of Staff, Server Solutions) or Robin Sullivan (PMO history).</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Identify if AMD has any internal SPM/PPM initiative on the roadmap</strong> — budget cycle timing, internal champions, prior vendor evaluations. The 2017 PPM lost deal is on record — understand what changed and what was insufficient in that approach.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Research warm intro path to Don McClure</strong> — mutual connections in Server Solutions org. PMP-certified practitioner who sits at the center of AMD's most consequential delivery commitments. Warm intro preferred over cold outreach.</div></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div>
+        <div class="phase-title">60–90 Days</div>
+        <div class="phase-sub">Executive briefing · Customer references · Commercial entry point</div>
+      </div>
+    </div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>First executive briefing — Abhi Pant audience</strong> — framed as strategy-to-execution infrastructure, not product demo. Content: AMD's specific portfolio complexity, what peer semiconductor companies have done, and what Planview enables that the current tool stack cannot.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Connect Planview semiconductor customer references</strong> — companies that navigated similar acquisition integration + AI platform transformation complexity. Peer proof is the fastest path to credibility with a leader who has seen what good looks like at Cisco and NetApp.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Send Emails 07–10</strong> — third wave for relationship deepening: Schulenburg T2 (ZT integration IT demand), Sullivan T2 (PMO credibility cost), McClure T2 (portfolio vs project tracker), Simonich T2 (roadmap commitment risk).</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Validate commercial entry point</strong> — SPM pilot for Strategy and Operations function vs PPM for Engineering PMO. Align with Planview solutions engineering on AMD-specific demo environment: Jira integration above, SAP financial overlay below.</div></div>
+    <div class="step"><div class="step-check"></div><div class="step-text"><strong>Target: mutual agreement on 90-day discovery and value assessment</strong> — with at least two of the six identified stakeholders. Success metric: AMD acknowledges the portfolio infrastructure gap and is actively evaluating how to close it.</div></div>
+  </div>
+
+</div>
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function scrollToEmail(id) {
+  switchTab('outreach');
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function filterFeed(cat, btn) {
+  document.querySelectorAll('.feed-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const items = document.querySelectorAll('#feed-container .feed-item, #feed-container .pinned-item');
+  items.forEach(item => {
+    if (cat === 'all') {
+      item.style.display = 'flex';
+      if (item.classList.contains('pinned-item')) item.style.display = 'block';
+    } else {
+      const cats = (item.dataset.cat || '').split(' ');
+      const show = cats.includes(cat);
+      item.style.display = show ? (item.classList.contains('pinned-item') ? 'block' : 'flex') : 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>

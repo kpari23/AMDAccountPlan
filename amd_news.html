@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AMD Live Intelligence Feed – Planview</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --pv-green: #00A86B;
+  --pv-green-dark: #007A4D;
+  --amd-red: #ED1C24;
+  --bg: #F7F8FA;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+  --text: #111827;
+  --muted: #6B7280;
+  --tag-bg: #F3F4F6;
+  --ok: #15803D;
+  --ok-bg: #F0FDF4;
+  --warn-bg: #FFFBEB;
+  --danger-bg: #FEF0F0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+/* TOP NAV */
+.topnav {
+  background: #0F1923;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.topnav-left { display: flex; align-items: center; gap: 16px; }
+.pv-logo { font-weight: 700; font-size: 13px; letter-spacing: -0.2px; color: var(--pv-green); }
+.topnav-divider { width: 1px; height: 18px; background: rgba(255,255,255,0.1); }
+.topnav-title { font-weight: 600; font-size: 14px; color: #fff; display: flex; align-items: center; gap: 8px; }
+.amd-badge { background: var(--amd-red); color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.5px; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4CAF50; animation: pulse-green 2s ease-in-out infinite; flex-shrink: 0; }
+@keyframes pulse-green { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
+.topnav-right { display: flex; align-items: center; gap: 12px; }
+.back-link { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.45); text-decoration: none; display: flex; align-items: center; gap: 5px; transition: color 0.15s; }
+.back-link:hover { color: rgba(255,255,255,0.9); }
+.refresh-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 600; color: #fff;
+  background: var(--pv-green); border: none;
+  padding: 6px 14px; border-radius: 20px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: opacity 0.15s;
+}
+.refresh-btn:hover { opacity: 0.85; }
+.refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.spinning { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* LAYOUT */
+.layout { max-width: 1200px; margin: 0 auto; padding: 28px 32px 60px; display: grid; grid-template-columns: 1fr 260px; gap: 24px; align-items: start; }
+
+/* FEED HEADER */
+.feed-header { margin-bottom: 20px; }
+.feed-kicker { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pv-green); margin-bottom: 4px; }
+.feed-title { font-weight: 700; font-size: 22px; color: var(--text); line-height: 1.2; margin-bottom: 6px; }
+.feed-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.feed-meta-pill { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-family: 'DM Mono', monospace; font-size: 10px; }
+
+/* FILTER BAR */
+.filter-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn {
+  font-size: 11px; font-weight: 500; padding: 5px 14px;
+  border: 1px solid var(--border); border-radius: 20px;
+  background: var(--card); color: var(--muted);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #aaa; color: var(--text); }
+.filter-btn.active { background: var(--pv-green); color: #fff; border-color: var(--pv-green); }
+.filter-count { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; border-radius: 8px; font-size: 9px; font-weight: 700; padding: 0 3px; margin-left: 4px; background: rgba(255,255,255,0.25); }
+.filter-btn:not(.active) .filter-count { background: rgba(0,168,107,0.1); color: var(--pv-green); }
+
+/* LOADING / ERROR / EMPTY */
+.state-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 40px 24px; text-align: center; }
+.state-icon { font-size: 32px; margin-bottom: 12px; }
+.state-title { font-weight: 700; font-size: 16px; color: var(--text); margin-bottom: 6px; }
+.state-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.skel { background: linear-gradient(90deg, var(--tag-bg) 25%, #eaebee 50%, var(--tag-bg) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+.skel-item { height: 88px; margin-bottom: 10px; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* NEWS ITEMS */
+.news-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.news-item:hover { border-color: #bbb; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.ni-source { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.ni-headline { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 5px; }
+.ni-snippet { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 7px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ni-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ni-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+.ni-tag { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
+.tag-finance    { background: rgba(217,119,6,0.1);   color: #92400E; }
+.tag-product    { background: rgba(21,128,61,0.1);   color: #15803D; }
+.tag-leadership { background: rgba(124,58,237,0.1);  color: #6D28D9; }
+.tag-tech       { background: rgba(37,99,235,0.1);   color: #1D4ED8; }
+.tag-compete    { background: rgba(237,28,36,0.1);   color: var(--amd-red); }
+.tag-risk       { background: rgba(220,38,38,0.1);   color: #DC2626; }
+.tag-general    { background: var(--tag-bg);          color: var(--muted); }
+.ni-arrow { font-size: 16px; color: var(--muted); flex-shrink: 0; padding-top: 2px; transition: color 0.15s; }
+.news-item:hover .ni-arrow { color: var(--pv-green); }
+
+/* SIDEBAR */
+.sidebar { position: sticky; top: 80px; }
+.sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+.sidebar-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.tracker-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.tracker-row:last-child { border-bottom: none; }
+.tracker-label { font-size: 12px; color: var(--text); }
+.tracker-count { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: var(--pv-green); min-width: 20px; text-align: right; }
+.watchword { display: inline-block; font-size: 11px; background: var(--tag-bg); color: var(--muted); padding: 3px 8px; border-radius: 4px; margin: 3px 3px 0 0; }
+.quick-link { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--pv-green); text-decoration: none; padding: 6px 0; border-bottom: 1px solid var(--border); transition: opacity 0.15s; }
+.quick-link:last-child { border-bottom: none; }
+.quick-link:hover { opacity: 0.7; }
+.deal-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
+.deal-greenfield { background: rgba(0,168,107,0.1); color: var(--pv-green-dark); border: 1px solid rgba(0,168,107,0.25); }
+.signal-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.signal-item:last-child { border-bottom: none; }
+.signal-label { font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.signal-body { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+@media(max-width: 800px) {
+  .layout { grid-template-columns: 1fr; padding: 20px 16px 40px; }
+  .sidebar { position: static; }
+  .topnav { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <div class="pv-logo">planview</div>
+    <div class="topnav-divider"></div>
+    <div class="topnav-title">
+      <span class="amd-badge">AMD</span>
+      <div class="live-dot"></div>
+      Live Intelligence Feed
+    </div>
+  </div>
+  <div class="topnav-right">
+    <a class="back-link" href="amd_account_plan.html">← Account Plan</a>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadFeed(true)">
+      <svg id="refresh-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- MAIN FEED -->
+  <div>
+    <div class="feed-header">
+      <div class="feed-kicker">Advanced Micro Devices · NASDAQ: AMD · Live Feed</div>
+      <div class="feed-title">Intelligence Feed</div>
+      <div class="feed-meta">
+        <span>Auto-sourced from Google News, Yahoo Finance &amp; industry publications</span>
+        <span class="feed-meta-pill" id="last-updated">Loading…</span>
+        <span class="feed-meta-pill" id="item-count">— items</span>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"        onclick="setFilter('all',this)">All <span class="filter-count" id="cnt-all">0</span></button>
+      <button class="filter-btn"        data-filter="finance"    onclick="setFilter('finance',this)">Financial <span class="filter-count" id="cnt-finance">0</span></button>
+      <button class="filter-btn"        data-filter="product"    onclick="setFilter('product',this)">Product &amp; AI <span class="filter-count" id="cnt-product">0</span></button>
+      <button class="filter-btn"        data-filter="leadership" onclick="setFilter('leadership',this)">Leadership <span class="filter-count" id="cnt-leadership">0</span></button>
+      <button class="filter-btn"        data-filter="tech"       onclick="setFilter('tech',this)">Technology <span class="filter-count" id="cnt-tech">0</span></button>
+      <button class="filter-btn"        data-filter="compete"    onclick="setFilter('compete',this)">Competitive <span class="filter-count" id="cnt-compete">0</span></button>
+      <button class="filter-btn"        data-filter="risk"       onclick="setFilter('risk',this)">Risk &amp; Regulatory <span class="filter-count" id="cnt-risk">0</span></button>
+    </div>
+
+    <div id="feed-container">
+      <div id="loading-state">
+        <div class="skel skel-item"></div>
+        <div class="skel skel-item"></div>
+        <div class="skel skel-item"></div>
+        <div class="skel skel-item"></div>
+        <div class="skel skel-item"></div>
+      </div>
+      <div id="items-container" style="display:none;"></div>
+      <div id="error-state" style="display:none;">
+        <div class="state-box">
+          <div class="state-icon">⚠️</div>
+          <div class="state-title">Feed unavailable</div>
+          <div class="state-body" id="error-msg">Could not load feed. The RSS proxy may be rate-limited — try again in a moment.</div>
+        </div>
+      </div>
+      <div id="empty-state" style="display:none;">
+        <div class="state-box">
+          <div class="state-icon">🔍</div>
+          <div class="state-title">No items match this filter</div>
+          <div class="state-body">Try switching to "All" or a different category.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Account Status</div>
+      <div style="margin-bottom:8px;">
+        <span class="deal-pill deal-greenfield">● New Logo · Greenfield</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        SPM / PPM / AgilePlace · Est. ACV TBD · Discovery Stage · Owner: Kush Parikh
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Topic Tracker</div>
+      <div class="tracker-row"><span class="tracker-label">Earnings &amp; Finance</span><span class="tracker-count" id="tr-finance">—</span></div>
+      <div class="tracker-row"><span class="tracker-label">Product &amp; AI</span><span class="tracker-count" id="tr-product">—</span></div>
+      <div class="tracker-row"><span class="tracker-label">Leadership &amp; Org</span><span class="tracker-count" id="tr-leadership">—</span></div>
+      <div class="tracker-row"><span class="tracker-label">Technology</span><span class="tracker-count" id="tr-tech">—</span></div>
+      <div class="tracker-row"><span class="tracker-label">Competitive</span><span class="tracker-count" id="tr-compete">—</span></div>
+      <div class="tracker-row"><span class="tracker-label">Risk &amp; Regulatory</span><span class="tracker-count" id="tr-risk">—</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Key Watchwords</div>
+      <div>
+        <span class="watchword">Lisa Su</span>
+        <span class="watchword">Abhi Pant</span>
+        <span class="watchword">Katrin Schulenburg</span>
+        <span class="watchword">Jean Hu</span>
+        <span class="watchword">Instinct MI450</span>
+        <span class="watchword">Helios</span>
+        <span class="watchword">ROCm</span>
+        <span class="watchword">EPYC</span>
+        <span class="watchword">ZT Systems</span>
+        <span class="watchword">Silo AI</span>
+        <span class="watchword">OpenAI</span>
+        <span class="watchword">Meta partnership</span>
+        <span class="watchword">export controls</span>
+        <span class="watchword">data center</span>
+        <span class="watchword">AI chip</span>
+        <span class="watchword">Nvidia</span>
+        <span class="watchword">earnings</span>
+        <span class="watchword">tariffs</span>
+        <span class="watchword">AXCENT</span>
+        <span class="watchword">SAP</span>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Key Signals to Watch</div>
+      <div class="signal-item">
+        <div class="signal-label">Abhi Pant role status</div>
+        <div class="signal-body">LinkedIn signals possible move to Workday — verify before outreach</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-label">MI450 / OpenAI delivery</div>
+        <div class="signal-body">6GW commitment mid-2026 — any slip is a portfolio urgency trigger</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-label">Export control updates</div>
+        <div class="signal-body">New U.S. chip restrictions → immediate reprioritization need</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-label">ZT Systems integration news</div>
+        <div class="signal-body">Any synergy or delay announcement strengthens PMO pain case</div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Quick Links</div>
+      <a class="quick-link" href="https://ir.amd.com" target="_blank">↗ AMD Investor Relations</a>
+      <a class="quick-link" href="https://finance.yahoo.com/quote/AMD/news/" target="_blank">↗ Yahoo Finance · AMD</a>
+      <a class="quick-link" href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AMD&type=10-K&dateb=&owner=include&count=5" target="_blank">↗ SEC Filings · AMD</a>
+      <a class="quick-link" href="https://www.amd.com/en/newsroom.html" target="_blank">↗ AMD Newsroom</a>
+      <a class="quick-link" href="https://www.linkedin.com/company/amd/" target="_blank">↗ AMD LinkedIn</a>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+// CATEGORY CLASSIFIER
+const CATEGORIES = {
+  finance:    { label: 'Financial',        cls: 'tag-finance',    keywords: ['revenue','earnings','profit','margin','ebit','stock','amd','tariff','financial','fiscal','quarter','guidance','investor','dividend','shares','billion','million','debt','cost','spending','budget','sale','sales','cash flow','operating income','gross margin','forecast'] },
+  product:    { label: 'Product & AI',     cls: 'tag-product',    keywords: ['instinct','epyc','ryzen','radeon','mi300','mi400','mi450','mi500','helios','rocm','gpu','cpu','accelerator','chip','silicon','ai chip','data center','server','processor','compute','hardware','launch','release','roadmap','silo ai','zt systems','rack','bandwidth','inference','training'] },
+  leadership: { label: 'Leadership',       cls: 'tag-leadership', keywords: ['ceo','coo','cfo','president','chief','executive','appoint','hire','resign','retire','lisa su','jean hu','abhi pant','katrin schulenburg','forrest norrod','leadership','management','board','director','officer','promoted','new role','vp','vice president'] },
+  tech:       { label: 'Technology',       cls: 'tag-tech',       keywords: ['software','platform','app','digital','data','automation','engineering','system','cloud','tech','integration','api','agile','open source','developer','framework','inference','llm','model','ai software','toolchain','ecosystem','open','stack'] },
+  compete:    { label: 'Competitive',      cls: 'tag-compete',    keywords: ['nvidia','intel','qualcomm','arm','tsmc','samsung','competitor','market share','industry','rival','cuda','h100','h200','blackwell','hopper','compare','versus','competition','benchmark','performance','geforce','xeon'] },
+  risk:       { label: 'Risk',             cls: 'tag-risk',       keywords: ['export','control','sanction','license','regulation','tariff','china','trade','ban','restriction','compliance','government','policy','geopolitical','supply chain','inventory','charge','write-down','layoff','restructur','integration risk','acqui'] },
+};
+
+function classifyItem(title, snippet) {
+  const text = (title + ' ' + snippet).toLowerCase();
+  // Risk first — highest priority signal
+  if (CATEGORIES.risk.keywords.some(kw => text.includes(kw))) return 'risk';
+  for (const [cat, cfg] of Object.entries(CATEGORIES)) {
+    if (cat === 'risk') continue;
+    if (cfg.keywords.some(kw => text.includes(kw))) return cat;
+  }
+  return 'general';
+}
+
+// DATE FORMATTER
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 1000);
+    if (diff < 3600)   return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400)  return Math.floor(diff/3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  } catch(e) { return dateStr; }
+}
+
+// RSS FEEDS — AMD-specific Google News queries + Yahoo Finance
+const FEEDS = [
+  {
+    label: 'Google News',
+    url: 'https://news.google.com/rss/search?q=AMD+Advanced+Micro+Devices&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    label: 'Google News',
+    url: 'https://news.google.com/rss/search?q=AMD+earnings+revenue+Lisa+Su&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    label: 'Google News',
+    url: 'https://news.google.com/rss/search?q=AMD+Instinct+MI450+Helios+AI+chip&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    label: 'Google News',
+    url: 'https://news.google.com/rss/search?q=AMD+EPYC+data+center+OpenAI+Meta&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    label: 'Google News',
+    url: 'https://news.google.com/rss/search?q=AMD+export+controls+China+tariffs&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    label: 'Yahoo Finance',
+    url: 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=AMD&region=US&lang=en-US',
+  },
+];
+
+const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+
+// STATE
+let allItems = [];
+let currentFilter = 'all';
+
+// MAIN LOAD
+async function loadFeed(force = false) {
+  const btn  = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  btn.disabled = true;
+  icon.classList.add('spinning');
+
+  showState('loading');
+  document.getElementById('last-updated').textContent = 'Fetching…';
+
+  const seen    = new Set();
+  const results = [];
+
+  const fetches    = FEEDS.map(feed => fetchRSS(feed.url, feed.label).catch(() => []));
+  const feedResults = await Promise.all(fetches);
+
+  for (const items of feedResults) {
+    for (const item of items) {
+      const key = item.title.trim().toLowerCase().slice(0, 60);
+      if (!seen.has(key)) {
+        seen.add(key);
+        results.push(item);
+      }
+    }
+  }
+
+  results.sort((a, b) => new Date(b.pubDate || 0) - new Date(a.pubDate || 0));
+  allItems = results.slice(0, 60);
+
+  btn.disabled = false;
+  icon.classList.remove('spinning');
+
+  if (allItems.length === 0) {
+    showState('error');
+    document.getElementById('error-msg').textContent =
+      'No articles found. The RSS proxy may be rate-limited — try again in a moment.';
+    document.getElementById('last-updated').textContent = 'Failed';
+    return;
+  }
+
+  const now = new Date();
+  document.getElementById('last-updated').textContent =
+    'Updated ' + now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) +
+    ' · ' + now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  renderItems();
+}
+
+// FETCH & PARSE ONE RSS FEED
+async function fetchRSS(feedUrl, sourceName) {
+  const proxied = CORS_PROXY + encodeURIComponent(feedUrl);
+  const res = await fetch(proxied, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Proxy fetch failed');
+  const data = await res.json();
+  const xmlStr = data.contents;
+  const parser = new DOMParser();
+  const doc    = parser.parseFromString(xmlStr, 'text/xml');
+  const items  = Array.from(doc.querySelectorAll('item'));
+
+  return items.map(item => {
+    const title   = item.querySelector('title')?.textContent?.trim() || '';
+    const link    = item.querySelector('link')?.textContent?.trim() ||
+                    item.querySelector('guid')?.textContent?.trim() || '#';
+    const snippet = stripHtml(
+      item.querySelector('description')?.textContent ||
+      item.querySelector('summary')?.textContent || ''
+    ).trim().slice(0, 220);
+    const pubDate   = item.querySelector('pubDate')?.textContent?.trim() ||
+                      item.querySelector('published')?.textContent?.trim() || '';
+    const rawSource = item.querySelector('source')?.textContent?.trim() || sourceName;
+
+    return { title, link, snippet, pubDate, source: rawSource, category: classifyItem(title, snippet) };
+  }).filter(i => i.title && i.title.length > 5);
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
+// RENDER
+function renderItems() {
+  const filtered = currentFilter === 'all'
+    ? allItems
+    : allItems.filter(i => i.category === currentFilter);
+
+  const counts = { finance:0, product:0, leadership:0, tech:0, compete:0, risk:0, general:0 };
+  allItems.forEach(i => {
+    if (counts[i.category] !== undefined) counts[i.category]++;
+    else counts.general++;
+  });
+
+  document.getElementById('cnt-all').textContent        = allItems.length;
+  document.getElementById('cnt-finance').textContent    = counts.finance;
+  document.getElementById('cnt-product').textContent    = counts.product;
+  document.getElementById('cnt-leadership').textContent = counts.leadership;
+  document.getElementById('cnt-tech').textContent       = counts.tech;
+  document.getElementById('cnt-compete').textContent    = counts.compete;
+  document.getElementById('cnt-risk').textContent       = counts.risk;
+
+  document.getElementById('tr-finance').textContent    = counts.finance;
+  document.getElementById('tr-product').textContent    = counts.product;
+  document.getElementById('tr-leadership').textContent = counts.leadership;
+  document.getElementById('tr-tech').textContent       = counts.tech;
+  document.getElementById('tr-compete').textContent    = counts.compete;
+  document.getElementById('tr-risk').textContent       = counts.risk;
+
+  document.getElementById('item-count').textContent = allItems.length + ' items';
+
+  if (filtered.length === 0) { showState('empty'); return; }
+
+  showState('items');
+  const container = document.getElementById('items-container');
+  container.innerHTML = filtered.map(item => {
+    const catCfg     = CATEGORIES[item.category] || { label: 'General', cls: 'tag-general' };
+    const safeTitle  = escHtml(item.title);
+    const safeSnip   = escHtml(item.snippet);
+    const safeSrc    = escHtml(item.source);
+    return `
+      <a class="news-item" href="${escHtml(item.link)}" target="_blank" rel="noopener">
+        <div>
+          <div class="ni-source">${safeSrc}</div>
+          <div class="ni-headline">${safeTitle}</div>
+          ${safeSnip ? `<div class="ni-snippet">${safeSnip}</div>` : ''}
+          <div class="ni-footer">
+            <span class="ni-date">${formatDate(item.pubDate)}</span>
+            <span class="ni-tag ${catCfg.cls}">${catCfg.label}</span>
+          </div>
+        </div>
+        <div class="ni-arrow">↗</div>
+      </a>`;
+  }).join('');
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (allItems.length > 0) renderItems();
+}
+
+function showState(state) {
+  document.getElementById('loading-state').style.display   = state === 'loading' ? '' : 'none';
+  document.getElementById('items-container').style.display  = state === 'items'   ? '' : 'none';
+  document.getElementById('error-state').style.display     = state === 'error'    ? '' : 'none';
+  document.getElementById('empty-state').style.display     = state === 'empty'    ? '' : 'none';
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Auto-load on open
+loadFeed();
+</script>
+</body>
+</html>
